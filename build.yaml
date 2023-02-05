@@ -1,0 +1,17 @@
+---
+name: "One Pace"
+guid: "1c0bf35e-3df4-47cc-8a4e-e3865de60d2f"
+version: "1.0.0.0"
+targetAbi: "10.8.0.0"
+framework: "net6.0"
+overview: "Metadata and cover art integration for the One Pace project"
+description: >-
+  This integration is experimental because the One Pace project currently does not expose metadata in a stable manner,
+  so we have to rely on scraping data from the project website instead. Therefore, medatata retrieval might break
+  spontaneously if the website changes.
+category: "Metadata"
+owner: "jwueller"
+artifacts:
+- "JWueller.Jellyfin.OnePace.dll"
+changelog: |-
+  1.0.0.0 - initial release

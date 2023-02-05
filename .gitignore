@@ -1,0 +1,6 @@
+.vs/
+.vscode/
+.idea/
+bin/
+obj/
+watch.json
