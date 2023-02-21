@@ -8,6 +8,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using Microsoft.Extensions.Logging;
 
 namespace JWueller.Jellyfin.OnePace;
 
@@ -18,16 +19,19 @@ public class ArcImageProvider : IRemoteImageProvider, IHasOrder
 {
     private readonly OnePaceRepository _repository;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<ArcImageProvider> _log;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ArcImageProvider"/> class.
     /// </summary>
     /// <param name="repository">The One Pace repository.</param>
     /// <param name="httpClientFactory">The HTTP client factory used to fetch images.</param>
-    public ArcImageProvider(OnePaceRepository repository, IHttpClientFactory httpClientFactory)
+    /// <param name="logger">The log target for this class.</param>
+    public ArcImageProvider(OnePaceRepository repository, IHttpClientFactory httpClientFactory, ILogger<ArcImageProvider> logger)
     {
         _repository = repository;
         _httpClientFactory = httpClientFactory;
+        _log = logger;
     }
 
     /// <inheritdoc/>

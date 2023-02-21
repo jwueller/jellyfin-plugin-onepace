@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Providers;
+using Microsoft.Extensions.Logging;
 
 namespace JWueller.Jellyfin.OnePace;
 
