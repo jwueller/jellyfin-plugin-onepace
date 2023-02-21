@@ -31,6 +31,8 @@ Enable the "One Pace" downloaders you want to use (most likely all of them) and 
 
 If the library was previously scanned, you might have to manually identify or refresh series metadata.
 
+Note that the One Pace project currently doesn't have any series cover art, so you might have to either manually upload some, or enable a different provider like AniList or AniDB to fetch some for the regular One Piece series.
+
 ## Recommended File Structure
 
 This integration is designed to work directly with the released files from the One Pace project.
