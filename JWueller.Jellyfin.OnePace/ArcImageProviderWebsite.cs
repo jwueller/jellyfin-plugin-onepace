@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
@@ -15,27 +16,30 @@ namespace JWueller.Jellyfin.OnePace;
 /// <summary>
 /// Populates One Pace arc cover art from the project website.
 /// </summary>
-public class ArcImageProvider : IRemoteImageProvider, IHasOrder
+public class ArcImageProviderWebsite : IRemoteImageProvider, IHasOrder
 {
     private readonly OnePaceRepository _repository;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<ArcImageProvider> _log;
+    private readonly ILogger<ArcImageProviderWebsite> _log;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ArcImageProvider"/> class.
+    /// Initializes a new instance of the <see cref="ArcImageProviderWebsite"/> class.
     /// </summary>
     /// <param name="repository">The One Pace repository.</param>
     /// <param name="httpClientFactory">The HTTP client factory used to fetch images.</param>
     /// <param name="logger">The log target for this class.</param>
-    public ArcImageProvider(OnePaceRepository repository, IHttpClientFactory httpClientFactory, ILogger<ArcImageProvider> logger)
+    public ArcImageProviderWebsite(OnePaceRepository repository, IHttpClientFactory httpClientFactory, ILogger<ArcImageProviderWebsite> logger)
     {
         _repository = repository;
         _httpClientFactory = httpClientFactory;
         _log = logger;
     }
 
-    /// <inheritdoc/>
-    public int Order => -1000;
+    /// <summary>
+    /// Gets the order of results based on the plugin configuration. A lower order means the result is preferred more.
+    /// When we want to prefer website results, we want this to be 0, and 1 otherwise.
+    /// </summary>
+    public int Order => Convert.ToInt32(Plugin.Instance!.Configuration.PreferDiscordForArcPosters); // 0 or 1
 
     /// <inheritdoc/>
     public string Name => Plugin.ProviderName;

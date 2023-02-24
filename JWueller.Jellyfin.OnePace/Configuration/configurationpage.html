@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>One Pace</title>
+</head>
+<body>
+    <div data-role="page" class="page type-interior pluginConfigurationPage opConfigurationPage" data-require="emby-input,emby-button">
+        <div data-role="content">
+            <div class="content-primary">
+                <form class="opConfigurationPage">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">One Pace Plugin</h2>
+                        <a is="emby-linkbutton" class="raised button-alt headerHelpButton emby-button" target="_blank" href="https://github.com/jwueller/jellyfin-plugin-onepace/blob/master/README.md">Help</a>
+                    </div>
+                    <div class="verticalSection">
+                        <p>Use the checkbox to toggle between preferring arc posters from the 
+                            One Pace website (default, more frequently updated) and the One Pace discord (more complete)</p>
+                        <br/>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="prefer-discord-for-arc-posters" name="prefer-discord-for-arc-posters" />
+                            <span>Prefer One Pace Discord as source for arc posters</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            The One Pace discord is more complete, but less often updated. 
+                        </div>
+                    </div>
+                    <br/>
+                    <button is="emby-button" type="submit" class="raised button-submit block"><span>${Save}</span></button>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var pluginId = "1c0bf35e-3df4-47cc-8a4e-e3865de60d2f";
+
+            $('.opConfigurationPage').on('pageshow', function () {
+                Dashboard.showLoadingMsg();
+                var page = this;
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    document.getElementById('prefer-discord-for-arc-posters').checked = config.PreferDiscordForArcPosters;
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            $('.opConfigurationPage').on('submit', function () {
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    config.PreferDiscordForArcPosters = document.getElementById('prefer-discord-for-arc-posters').checked;
+
+                    ApiClient.updatePluginConfiguration(pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                });
+
+                return false;
+            });
+        </script>
+    </div>
+</body>
+</html>
