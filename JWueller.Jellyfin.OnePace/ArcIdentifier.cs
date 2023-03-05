@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Providers;
-using Microsoft.Extensions.Logging;
 
 namespace JWueller.Jellyfin.OnePace;
 
@@ -26,14 +25,22 @@ internal static class ArcIdentifier
             var arcs = await repository.FindAllArcsAsync(cancellationToken).ConfigureAwait(false);
             if (arcs != null)
             {
+                // All of these folder names should get matched properly:
+                // - "[One Pace][1-7] Romance Dawn [1080p]"
+                // - "Arc 1 - Romance Dawn"
+                // - "Romance Dawn"
+                // - "1"
                 var directoryName = Path.GetFileName(itemLookupInfo.Path);
 
-                // match against arc numbers
+                // match against chapter ranges
                 foreach (var arc in arcs)
                 {
-                    if (Regex.IsMatch(directoryName, @"\b0*" + Regex.Escape(arc.Number.ToString(System.Globalization.CultureInfo.InvariantCulture)) + @"\b", RegexOptions.IgnoreCase))
+                    if (!string.IsNullOrEmpty(arc.MangaChapters))
                     {
-                        return arc;
+                        if (Regex.IsMatch(directoryName, @"\b" + Regex.Escape(arc.MangaChapters) + @"\b", RegexOptions.IgnoreCase))
+                        {
+                            return arc;
+                        }
                     }
                 }
 
@@ -46,6 +53,15 @@ internal static class ArcIdentifier
                         {
                             return arc;
                         }
+                    }
+                }
+
+                // match against arc numbers
+                foreach (var arc in arcs)
+                {
+                    if (Regex.IsMatch(directoryName, @"\b0*" + Regex.Escape(arc.Number.ToString(System.Globalization.CultureInfo.InvariantCulture)) + @"\b", RegexOptions.IgnoreCase))
+                    {
+                        return arc;
                     }
                 }
             }

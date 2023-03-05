@@ -26,6 +26,10 @@ internal static class EpisodeIdentifier
             var episodes = await repository.FindAllEpisodesAsync(cancellationToken).ConfigureAwait(false);
             if (episodes != null)
             {
+                // All of these file names should get matched properly:
+                // - "[One Pace][3-5] Romance Dawn 03 [1080p][D767799C]"
+                // - "Romance Dawn 03"
+                // - "3-5"
                 var fileName = Path.GetFileNameWithoutExtension(itemLookupInfo.Path);
 
                 // match against chapter ranges

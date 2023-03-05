@@ -17,6 +17,8 @@ public interface IArc
 
     string InvariantTitle { get; } // e.g. "Romance Dawn"
 
+    string MangaChapters { get; }
+
     DateTime? ReleaseDate { get; }
 }
 
