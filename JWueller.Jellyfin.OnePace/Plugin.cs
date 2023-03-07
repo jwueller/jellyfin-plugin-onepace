@@ -21,10 +21,16 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
         : base(applicationPaths, xmlSerializer)
     {
         Instance = this;
+        ApplicationPaths = applicationPaths;
     }
 
     /// <inheritdoc />
     public override string Name => ProviderName;
+
+    /// <summary>
+    /// Gets all the application paths used by Jellyfin.
+    /// </summary>
+    public new IApplicationPaths ApplicationPaths { get; private set; }
 
     internal static string ProviderName => "One Pace";
 
@@ -38,7 +44,14 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     /// <inheritdoc />
     public IEnumerable<PluginPageInfo> GetPages()
-    {
-        return new List<PluginPageInfo>();
-    }
+        {
+            return new[]
+            {
+                new PluginPageInfo
+                {
+                    Name = "One Pace",
+                    EmbeddedResourcePath = GetType().Namespace + ".Configuration.configurationpage.html"
+                }
+            };
+        }
 }
