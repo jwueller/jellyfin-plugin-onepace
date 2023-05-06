@@ -14,6 +14,8 @@ namespace JWueller.Jellyfin.OnePace;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Instantiated by Jellyfin")]
 public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
+    internal const string ProviderName = "One Pace";
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Plugin"/> class.
     /// </summary>
@@ -26,8 +28,6 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     /// <inheritdoc />
     public override string Name => ProviderName;
-
-    internal static string ProviderName => "One Pace";
 
     /// <inheritdoc />
     public override Guid Id => Guid.Parse("1c0bf35e-3df4-47cc-8a4e-e3865de60d2f");

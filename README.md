@@ -15,7 +15,7 @@ This [Jellyfin](https://jellyfin.org/) plugin provides metadata and cover art in
 
 ### Configure the Library
 
-Make sure you have a library of content type "Shows". To create a new one:
+Make sure you have a library of content type "Shows". You can use an existing one or create a new one like this:
 
 1. Go to: Dashboard - Libraries - Add Media Library
 2. Set "Content Type" to "Shows"
@@ -38,23 +38,23 @@ Note that the One Pace project currently doesn't have any series cover art, so y
 This integration is designed to work directly with the released files from the One Pace project.
 
 * Paths containing "One Pace" will be scanned.
-* Arcs are matched by number or title. You can use empty folders as placeholders for unreleased arcs.
+* Arcs are matched by manga chapter range, title or number. You can use empty folders as placeholders for unreleased arcs.
 * Episodes are matched by manga chapter range or title.
 
 ### Example
 
 ```
 /media/anime/One Pace/
-├── Arc 01 - Romance Dawn
+├── [One Pace][1-7] Romance Dawn [1080p]
 │   ├── [One Pace][1] Romance Dawn 01 [1080p][D767799C].mkv
 │   ├── [One Pace][2] Romance Dawn 02 [1080p][04A43CEF].mkv
 │   ├── [One Pace][3-5] Romance Dawn 03 [1080p][C7CA5080].mkv
 │   └── [One Pace][5-7] Romance Dawn 04 [1080p][09DD81D3].mkv
-├── Arc 02 - Orange Town
+├── [One Pace][8-21] Orange Town [1080p]
 │   ├── [One Pace][11-16] Orange Town 02 [480p][3D7957D8].mkv
 │   ├── [One Pace][17-21] Orange Town 03 [480p][800263CF].mkv
 │   └── [One Pace][8-11] Orange Town 01 [480p][A2F5F372].mkv
-├── Arc 03 - Syrup Village
+├── [One Pace][23-41] Syrup Village [480p]
 │   ├── [One Pace][23-25] Syrup Village 01 [480p][B19F374A].mkv
 │   ├── [One Pace][26-27] Syrup Village 02 [480p][7EE6C65F].mkv
 │   ├── [One Pace][28-30] Syrup Village 03 [480p][C2C0A86A].mkv
