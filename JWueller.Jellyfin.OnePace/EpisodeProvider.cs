@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace JWueller.Jellyfin.OnePace;
 /// <summary>
 /// Populates One Pace episode metadata from the project website.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated by Jellyfin")]
 public class EpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IHasOrder
 {
     private readonly OnePaceRepository _repository;

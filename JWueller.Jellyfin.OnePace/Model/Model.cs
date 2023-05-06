@@ -1,8 +1,9 @@
 using System;
 
-namespace JWueller.Jellyfin.OnePace.Model;
+// Missing XML comment for publicly visible type or member
+#pragma warning disable CS1591
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+namespace JWueller.Jellyfin.OnePace.Model;
 
 public interface ISeries
 {

@@ -24,35 +24,33 @@ internal static class EpisodeIdentifier
         if (IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Path))
         {
             var episodes = await repository.FindAllEpisodesAsync(cancellationToken).ConfigureAwait(false);
-            if (episodes != null)
-            {
-                // All of these file names should get matched properly:
-                // - "[One Pace][3-5] Romance Dawn 03 [1080p][D767799C]"
-                // - "Romance Dawn 03"
-                // - "3-5"
-                var fileName = Path.GetFileNameWithoutExtension(itemLookupInfo.Path);
 
-                // match against chapter ranges
-                foreach (var episode in episodes)
+            // All of these file names should get matched properly:
+            // - "[One Pace][3-5] Romance Dawn 03 [1080p][D767799C]"
+            // - "Romance Dawn 03"
+            // - "3-5"
+            var fileName = Path.GetFileNameWithoutExtension(itemLookupInfo.Path);
+
+            // match against chapter ranges
+            foreach (var episode in episodes)
+            {
+                if (!string.IsNullOrEmpty(episode.MangaChapters))
                 {
-                    if (!string.IsNullOrEmpty(episode.MangaChapters))
+                    if (Regex.IsMatch(fileName, @"\b" + Regex.Escape(episode.MangaChapters) + @"\b", RegexOptions.IgnoreCase))
                     {
-                        if (Regex.IsMatch(fileName, @"\b" + Regex.Escape(episode.MangaChapters) + @"\b", RegexOptions.IgnoreCase))
-                        {
-                            return episode;
-                        }
+                        return episode;
                     }
                 }
+            }
 
-                // match against invariant titles
-                foreach (var episode in episodes)
+            // match against invariant titles
+            foreach (var episode in episodes)
+            {
+                if (!string.IsNullOrEmpty(episode.InvariantTitle))
                 {
-                    if (!string.IsNullOrEmpty(episode.InvariantTitle))
+                    if (Regex.IsMatch(fileName, @"\b" + Regex.Escape(episode.InvariantTitle) + @"\b", RegexOptions.IgnoreCase))
                     {
-                        if (Regex.IsMatch(fileName, @"\b" + Regex.Escape(episode.InvariantTitle) + @"\b", RegexOptions.IgnoreCase))
-                        {
-                            return episode;
-                        }
+                        return episode;
                     }
                 }
             }

@@ -382,7 +382,7 @@ public class OnePaceRepository
     public Task<IReadOnlyCollection<Model.IArt>> FindAllSeriesLogoArtAsync()
     {
         var results = new List<Model.IArt>();
-        results.Add(new RepositoryArt("image/svg+xml", "https://onepace.net/images/one-pace-logo.svg"));
+        results.Add(new RepositoryArt("https://onepace.net/images/one-pace-logo.svg"));
         return Task.FromResult<IReadOnlyCollection<Model.IArt>>(results);
     }
 
@@ -523,7 +523,7 @@ public class OnePaceRepository
             return null;
         }
 
-        return DateTime.Parse(releasedDateString, System.Globalization.CultureInfo.InvariantCulture).ToUniversalTime();
+        return DateTime.Parse(releasedDateString, CultureInfo.InvariantCulture).ToUniversalTime();
     }
 
     private sealed class RepositorySeries : Model.ISeries
@@ -576,7 +576,7 @@ public class OnePaceRepository
 
     private sealed class RepositoryArt : Model.IArt
     {
-        public RepositoryArt(string mimeType, string url)
+        public RepositoryArt(string url)
         {
             Url = url;
         }

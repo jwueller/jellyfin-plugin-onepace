@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
@@ -8,6 +9,7 @@ namespace JWueller.Jellyfin.OnePace;
 /// <summary>
 /// Provides an external ID for the series.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated by Jellyfin")]
 public class SeriesExternalId : IExternalId
 {
     /// <inheritdoc/>

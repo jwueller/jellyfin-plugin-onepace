@@ -8,7 +8,7 @@ namespace JWueller.Jellyfin.OnePace;
 
 internal static class ArcIdentifier
 {
-    public static async Task<Model.IArc?> IdentifyAsync(OnePaceRepository repository, SeasonInfo itemLookupInfo, CancellationToken cancellationToken)
+    public static async Task<Model.IArc?> IdentifyAsync(OnePaceRepository repository, ItemLookupInfo itemLookupInfo, CancellationToken cancellationToken)
     {
         var arcNumber = itemLookupInfo.GetOnePaceArcNumber();
         if (arcNumber != null)
@@ -23,46 +23,44 @@ internal static class ArcIdentifier
         if (IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Path))
         {
             var arcs = await repository.FindAllArcsAsync(cancellationToken).ConfigureAwait(false);
-            if (arcs != null)
+
+            // All of these folder names should get matched properly:
+            // - "[One Pace][1-7] Romance Dawn [1080p]"
+            // - "Arc 1 - Romance Dawn"
+            // - "Romance Dawn"
+            // - "1"
+            var directoryName = Path.GetFileName(itemLookupInfo.Path);
+
+            // match against chapter ranges
+            foreach (var arc in arcs)
             {
-                // All of these folder names should get matched properly:
-                // - "[One Pace][1-7] Romance Dawn [1080p]"
-                // - "Arc 1 - Romance Dawn"
-                // - "Romance Dawn"
-                // - "1"
-                var directoryName = Path.GetFileName(itemLookupInfo.Path);
-
-                // match against chapter ranges
-                foreach (var arc in arcs)
+                if (!string.IsNullOrEmpty(arc.MangaChapters))
                 {
-                    if (!string.IsNullOrEmpty(arc.MangaChapters))
-                    {
-                        if (Regex.IsMatch(directoryName, @"\b" + Regex.Escape(arc.MangaChapters) + @"\b", RegexOptions.IgnoreCase))
-                        {
-                            return arc;
-                        }
-                    }
-                }
-
-                // match against invariant titles
-                foreach (var arc in arcs)
-                {
-                    if (!string.IsNullOrEmpty(arc.InvariantTitle))
-                    {
-                        if (Regex.IsMatch(directoryName, @"\b" + Regex.Escape(arc.InvariantTitle) + @"\b", RegexOptions.IgnoreCase))
-                        {
-                            return arc;
-                        }
-                    }
-                }
-
-                // match against arc numbers
-                foreach (var arc in arcs)
-                {
-                    if (Regex.IsMatch(directoryName, @"\b0*" + Regex.Escape(arc.Number.ToString(System.Globalization.CultureInfo.InvariantCulture)) + @"\b", RegexOptions.IgnoreCase))
+                    if (Regex.IsMatch(directoryName, @"\b" + Regex.Escape(arc.MangaChapters) + @"\b", RegexOptions.IgnoreCase))
                     {
                         return arc;
                     }
+                }
+            }
+
+            // match against invariant titles
+            foreach (var arc in arcs)
+            {
+                if (!string.IsNullOrEmpty(arc.InvariantTitle))
+                {
+                    if (Regex.IsMatch(directoryName, @"\b" + Regex.Escape(arc.InvariantTitle) + @"\b", RegexOptions.IgnoreCase))
+                    {
+                        return arc;
+                    }
+                }
+            }
+
+            // match against arc numbers
+            foreach (var arc in arcs)
+            {
+                if (Regex.IsMatch(directoryName, @"\b0*" + Regex.Escape(arc.Number.ToString(System.Globalization.CultureInfo.InvariantCulture)) + @"\b", RegexOptions.IgnoreCase))
+                {
+                    return arc;
                 }
             }
         }

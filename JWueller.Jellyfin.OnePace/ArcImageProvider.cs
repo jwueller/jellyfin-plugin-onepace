@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace JWueller.Jellyfin.OnePace;
 /// <summary>
 /// Populates One Pace arc cover art from the project website.
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated by Jellyfin")]
 public class ArcImageProvider : IRemoteImageProvider, IHasOrder
 {
     private readonly OnePaceRepository _repository;

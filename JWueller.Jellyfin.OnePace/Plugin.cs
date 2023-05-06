@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
@@ -10,6 +11,7 @@ namespace JWueller.Jellyfin.OnePace;
 /// <summary>
 /// The main plugin.
 /// </summary>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Instantiated by Jellyfin")]
 public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
     /// <summary>
@@ -20,7 +22,6 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer)
         : base(applicationPaths, xmlSerializer)
     {
-        Instance = this;
     }
 
     /// <inheritdoc />
@@ -30,11 +31,6 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     /// <inheritdoc />
     public override Guid Id => Guid.Parse("1c0bf35e-3df4-47cc-8a4e-e3865de60d2f");
-
-    /// <summary>
-    /// Gets the current plugin instance.
-    /// </summary>
-    public static Plugin? Instance { get; private set; }
 
     /// <inheritdoc />
     public IEnumerable<PluginPageInfo> GetPages()
