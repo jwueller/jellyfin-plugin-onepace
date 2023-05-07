@@ -1,7 +1,7 @@
 ---
 name: "One Pace"
 guid: "1c0bf35e-3df4-47cc-8a4e-e3865de60d2f"
-version: "1.1.0.0"
+version: "1.1.1.0"
 targetAbi: "10.8.0.0"
 framework: "net6.0"
 overview: "Metadata and cover art integration for the One Pace project"
@@ -12,6 +12,7 @@ owner: "jwueller"
 artifacts:
 - "JWueller.Jellyfin.OnePace.dll"
 changelog: |-
+  1.1.1.0 - fix matching inefficiencies
   1.1.0.0 - migrate to GraphQL data source
   1.0.2.0 - refine arc matching to include chapter ranges
   1.0.1.0 - more sophisticated URL detection
