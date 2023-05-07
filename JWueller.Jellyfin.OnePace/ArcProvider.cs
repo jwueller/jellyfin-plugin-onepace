@@ -17,7 +17,7 @@ namespace JWueller.Jellyfin.OnePace;
 [SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated by Jellyfin")]
 public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrder
 {
-    private readonly OnePaceRepository _repository;
+    private readonly IRepository _repository;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ArcProvider> _log;
 
@@ -27,7 +27,7 @@ public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrde
     /// <param name="repository">The One Pace repository.</param>
     /// <param name="httpClientFactory">The HTTP client factory used to fetch images.</param>
     /// <param name="logger">The log target for this class.</param>
-    public ArcProvider(OnePaceRepository repository, IHttpClientFactory httpClientFactory, ILogger<ArcProvider> logger)
+    public ArcProvider(IRepository repository, IHttpClientFactory httpClientFactory, ILogger<ArcProvider> logger)
     {
         _repository = repository;
         _httpClientFactory = httpClientFactory;

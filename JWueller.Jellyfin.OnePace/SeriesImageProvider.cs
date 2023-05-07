@@ -18,7 +18,7 @@ namespace JWueller.Jellyfin.OnePace;
 [SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated by Jellyfin")]
 public class SeriesImageProvider : IRemoteImageProvider, IHasOrder
 {
-    private readonly OnePaceRepository _repository;
+    private readonly IRepository _repository;
     private readonly IHttpClientFactory _httpClientFactory;
 
     /// <summary>
@@ -26,7 +26,7 @@ public class SeriesImageProvider : IRemoteImageProvider, IHasOrder
     /// </summary>
     /// <param name="repository">The One Pace repository.</param>
     /// <param name="httpClientFactory">The HTTP client factory used to fetch images.</param>
-    public SeriesImageProvider(OnePaceRepository repository, IHttpClientFactory httpClientFactory)
+    public SeriesImageProvider(IRepository repository, IHttpClientFactory httpClientFactory)
     {
         _repository = repository;
         _httpClientFactory = httpClientFactory;
@@ -52,7 +52,7 @@ public class SeriesImageProvider : IRemoteImageProvider, IHasOrder
         var match = await SeriesIdentifier.IdentifyAsync(_repository, ((Series)item).GetLookupInfo(), cancellationToken).ConfigureAwait(false);
         if (match != null)
         {
-            foreach (var logoArt in await _repository.FindAllSeriesLogoArtAsync().ConfigureAwait(false))
+            foreach (var logoArt in await _repository.FindAllSeriesLogoArtAsync(cancellationToken).ConfigureAwait(false))
             {
                 result.Add(new RemoteImageInfo
                 {
@@ -63,7 +63,7 @@ public class SeriesImageProvider : IRemoteImageProvider, IHasOrder
                 });
             }
 
-            foreach (var coverArt in await _repository.FindAllSeriesCoverArtAsync().ConfigureAwait(false))
+            foreach (var coverArt in await _repository.FindAllSeriesCoverArtAsync(cancellationToken).ConfigureAwait(false))
             {
                 result.Add(new RemoteImageInfo
                 {

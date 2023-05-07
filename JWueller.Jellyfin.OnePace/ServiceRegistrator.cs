@@ -11,6 +11,6 @@ public class ServiceRegistrator : IPluginServiceRegistrator
     /// <inheritdoc/>
     public void RegisterServices(IServiceCollection serviceCollection)
     {
-        serviceCollection.AddSingleton<OnePaceRepository>();
+        serviceCollection.AddSingleton<IRepository, WebRepository>();
     }
 }

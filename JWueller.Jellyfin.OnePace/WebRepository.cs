@@ -16,22 +16,22 @@ namespace JWueller.Jellyfin.OnePace;
 /// <summary>
 /// Provides One Pace metadata from the project website.
 /// </summary>
-public class OnePaceRepository
+public class WebRepository : IRepository
 {
     private const string FallbackLanguageCode = "en";
     private static readonly string FallbackRawLanguageCode = ToRawLanguageCode(FallbackLanguageCode);
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMemoryCache _memoryCache;
-    private readonly ILogger<OnePaceRepository> _log;
+    private readonly ILogger<WebRepository> _log;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="OnePaceRepository"/> class.
+    /// Initializes a new instance of the <see cref="WebRepository"/> class.
     /// </summary>
     /// <param name="httpClientFactory">The HTTP client factory used to fetch metadata.</param>
     /// <param name="memoryCache">The cache used to prevent repeated endpoint requests.</param>
     /// <param name="logger">The log target for this class.</param>
-    public OnePaceRepository(IHttpClientFactory httpClientFactory, IMemoryCache memoryCache, ILogger<OnePaceRepository> logger)
+    public WebRepository(IHttpClientFactory httpClientFactory, IMemoryCache memoryCache, ILogger<WebRepository> logger)
     {
         _httpClientFactory = httpClientFactory;
         _memoryCache = memoryCache;
@@ -239,11 +239,7 @@ public class OnePaceRepository
         return null;
     }
 
-    /// <summary>
-    /// Retrieves the series model.
-    /// </summary>
-    /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
-    /// <returns>The series model.</returns>
+    /// <inheritdoc/>
     public async Task<ISeries?> FindSeriesAsync(CancellationToken cancellationToken)
     {
         try
@@ -263,11 +259,7 @@ public class OnePaceRepository
         return null;
     }
 
-    /// <summary>
-    /// Retrieves the models for all known arcs.
-    /// </summary>
-    /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
-    /// <returns>A read-only collection of arc models.</returns>
+    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<IArc>> FindAllArcsAsync(CancellationToken cancellationToken)
     {
         var results = new List<IArc>();
@@ -292,12 +284,7 @@ public class OnePaceRepository
         return results;
     }
 
-    /// <summary>
-    /// Retrieves the arc model based on the number.
-    /// </summary>
-    /// <param name="arcNumber">Number of the arc (1-based).</param>
-    /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
-    /// <returns>The arc model or <c>null</c> if not found.</returns>
+    /// <inheritdoc/>
     public async Task<IArc?> FindArcByNumberAsync(int arcNumber, CancellationToken cancellationToken)
     {
         var rawArc = await FindRawArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
@@ -309,11 +296,7 @@ public class OnePaceRepository
         return null;
     }
 
-    /// <summary>
-    /// Retrieves the models for all known episodes.
-    /// </summary>
-    /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
-    /// <returns>A read-only collection of episode models.</returns>
+    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<IEpisode>> FindAllEpisodesAsync(CancellationToken cancellationToken)
     {
         var results = new List<IEpisode>();
@@ -341,13 +324,7 @@ public class OnePaceRepository
         return results;
     }
 
-    /// <summary>
-    /// Retrieves the arc and episode model based on the number.
-    /// </summary>
-    /// <param name="arcNumber">Number of the arc (1-based).</param>
-    /// <param name="episodeNumber">Number of the episode within an arc (1-based).</param>
-    /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
-    /// <returns>The arc and episode models or <c>null</c> if not found.</returns>
+    /// <inheritdoc/>
     public async Task<IEpisode?> FindEpisodeByNumberAsync(int arcNumber, int episodeNumber, CancellationToken cancellationToken)
     {
         var rawEpisode = await FindRawEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
@@ -359,32 +336,21 @@ public class OnePaceRepository
         return null;
     }
 
-    /// <summary>
-    /// Retrieves the available series logo art.
-    /// </summary>
-    /// <returns>The art model.</returns>
-    public Task<IReadOnlyCollection<IArt>> FindAllSeriesLogoArtAsync()
+    /// <inheritdoc/>
+    public Task<IReadOnlyCollection<IArt>> FindAllSeriesLogoArtAsync(CancellationToken cancellationToken)
     {
         var results = new List<IArt>();
         results.Add(new RepositoryArt("https://onepace.net/images/one-pace-logo.svg"));
         return Task.FromResult<IReadOnlyCollection<IArt>>(results);
     }
 
-    /// <summary>
-    /// Retrieves the available series cover art.
-    /// </summary>
-    /// <returns>The art model.</returns>
-    public Task<IReadOnlyCollection<IArt>> FindAllSeriesCoverArtAsync()
+    /// <inheritdoc/>
+    public Task<IReadOnlyCollection<IArt>> FindAllSeriesCoverArtAsync(CancellationToken cancellationToken)
     {
         return Task.FromResult<IReadOnlyCollection<IArt>>(new List<IArt>());
     }
 
-    /// <summary>
-    /// Retrieves the available arc cover art.
-    /// </summary>
-    /// <param name="arcNumber">Number of the arc (1-based).</param>
-    /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
-    /// <returns>The art model.</returns>
+    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<IArt>> FindAllArcCoverArtAsync(int arcNumber, CancellationToken cancellationToken)
     {
         var results = new List<IArt>();
@@ -401,13 +367,7 @@ public class OnePaceRepository
         return results;
     }
 
-    /// <summary>
-    /// Retrieves the available episode cover art.
-    /// </summary>
-    /// <param name="arcNumber">Number of the arc (1-based).</param>
-    /// <param name="episodeNumber">Number of the episode within an arc (1-based).</param>
-    /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
-    /// <returns>The art model.</returns>
+    /// <inheritdoc/>
     public async Task<IReadOnlyCollection<IArt>> FindAllEpisodeCoverArtAsync(int arcNumber, int episodeNumber, CancellationToken cancellationToken)
     {
         var results = new List<IArt>();
@@ -424,12 +384,7 @@ public class OnePaceRepository
         return results;
     }
 
-    /// <summary>
-    /// Retrieves the series localization data.
-    /// </summary>
-    /// <param name="languageCode">Preferred language code.</param>
-    /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
-    /// <returns>The series model.</returns>
+    /// <inheritdoc/>
     public async Task<ILocalization?> FindBestSeriesLocalizationAsync(string languageCode, CancellationToken cancellationToken)
     {
         try
@@ -438,6 +393,17 @@ public class OnePaceRepository
             if (rawResponse != null)
             {
                 return new RepositoryLocalization(languageCode, rawResponse.Value);
+            }
+
+            // Try to fall back to a known good language code if the requested one is not available. This mirrors the
+            // behavior of the other localization resolvers.
+            if (languageCode != FallbackLanguageCode)
+            {
+                var fallbackLocalization = await FindBestSeriesLocalizationAsync(FallbackLanguageCode, cancellationToken).ConfigureAwait(false);
+                if (fallbackLocalization != null)
+                {
+                    return fallbackLocalization;
+                }
             }
         }
         catch (HttpRequestException)
@@ -449,13 +415,7 @@ public class OnePaceRepository
         return null;
     }
 
-    /// <summary>
-    /// Retrieves the arc localization data.
-    /// </summary>
-    /// <param name="arcNumber">Number of the arc (1-based).</param>
-    /// <param name="languageCode">Preferred language code.</param>
-    /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
-    /// <returns>The arc model.</returns>
+    /// <inheritdoc/>
     public async Task<ILocalization?> FindBestArcLocalizationAsync(int arcNumber, string languageCode, CancellationToken cancellationToken)
     {
         var rawArc = await FindRawArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
@@ -471,14 +431,7 @@ public class OnePaceRepository
         return null;
     }
 
-    /// <summary>
-    /// Retrieves the episode localization data.
-    /// </summary>
-    /// <param name="arcNumber">Number of the arc (1-based).</param>
-    /// <param name="episodeNumber">Number of the episode within an arc (1-based).</param>
-    /// <param name="languageCode">Preferred language code.</param>
-    /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
-    /// <returns>The arc model.</returns>
+    /// <inheritdoc/>
     public async Task<ILocalization?> FindBestEpisodeLocalizationAsync(int arcNumber, int episodeNumber, string languageCode, CancellationToken cancellationToken)
     {
         var rawEpisode = await FindRawEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);

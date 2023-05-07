@@ -8,7 +8,7 @@ namespace JWueller.Jellyfin.OnePace;
 
 internal static class EpisodeIdentifier
 {
-    public static async Task<Model.IEpisode?> IdentifyAsync(OnePaceRepository repository, ItemLookupInfo itemLookupInfo, CancellationToken cancellationToken)
+    public static async Task<Model.IEpisode?> IdentifyAsync(IRepository repository, ItemLookupInfo itemLookupInfo, CancellationToken cancellationToken)
     {
         var episodeNumberInfo = itemLookupInfo.GetOnePaceEpisodeNumber();
         if (episodeNumberInfo != null)

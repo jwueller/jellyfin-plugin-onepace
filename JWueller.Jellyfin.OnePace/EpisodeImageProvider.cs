@@ -18,7 +18,7 @@ namespace JWueller.Jellyfin.OnePace;
 [SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated by Jellyfin")]
 public class EpisodeImageProvider : IRemoteImageProvider, IHasOrder
 {
-    private readonly OnePaceRepository _repository;
+    private readonly IRepository _repository;
     private readonly IHttpClientFactory _httpClientFactory;
 
     /// <summary>
@@ -26,7 +26,7 @@ public class EpisodeImageProvider : IRemoteImageProvider, IHasOrder
     /// </summary>
     /// <param name="repository">The One Pace repository.</param>
     /// <param name="httpClientFactory">The HTTP client factory used to fetch images.</param>
-    public EpisodeImageProvider(OnePaceRepository repository, IHttpClientFactory httpClientFactory)
+    public EpisodeImageProvider(IRepository repository, IHttpClientFactory httpClientFactory)
     {
         _repository = repository;
         _httpClientFactory = httpClientFactory;

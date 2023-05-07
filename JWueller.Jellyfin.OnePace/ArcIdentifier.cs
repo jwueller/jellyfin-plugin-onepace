@@ -8,7 +8,7 @@ namespace JWueller.Jellyfin.OnePace;
 
 internal static class ArcIdentifier
 {
-    public static async Task<Model.IArc?> IdentifyAsync(OnePaceRepository repository, ItemLookupInfo itemLookupInfo, CancellationToken cancellationToken)
+    public static async Task<Model.IArc?> IdentifyAsync(IRepository repository, ItemLookupInfo itemLookupInfo, CancellationToken cancellationToken)
     {
         var arcNumber = itemLookupInfo.GetOnePaceArcNumber();
         if (arcNumber != null)
