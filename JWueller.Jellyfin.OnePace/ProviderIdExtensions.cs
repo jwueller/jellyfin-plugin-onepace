@@ -31,7 +31,7 @@ internal static class ProviderIdsExtensions
         if (providerId != null)
         {
             var match = Regex.Match(providerId, @"^A(\d+)$");
-            if (match != null)
+            if (match.Success)
             {
                 try
                 {
@@ -59,7 +59,7 @@ internal static class ProviderIdsExtensions
         if (providerId != null)
         {
             var match = Regex.Match(providerId, @"^A(\d+)E(\d+)$");
-            if (match != null)
+            if (match.Success)
             {
                 try
                 {
