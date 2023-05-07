@@ -10,7 +10,6 @@ internal static class SeriesIdentifier
     {
         if (itemLookupInfo.GetIsOnePaceSeries()
             || IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Name)
-            || IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.OriginalTitle)
             || IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Path))
         {
             return await repository.FindSeriesAsync(cancellationToken).ConfigureAwait(false);
