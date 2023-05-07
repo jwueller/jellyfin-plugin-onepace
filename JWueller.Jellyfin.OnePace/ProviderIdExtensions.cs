@@ -35,7 +35,7 @@ internal static class ProviderIdsExtensions
             {
                 try
                 {
-                    return int.Parse(match.Groups[0].ToString(), CultureInfo.InvariantCulture);
+                    return int.Parse(match.Groups[1].ToString(), CultureInfo.InvariantCulture);
                 }
                 catch (FormatException)
                 {
@@ -63,8 +63,8 @@ internal static class ProviderIdsExtensions
             {
                 try
                 {
-                    int arcNumber = int.Parse(match.Groups[0].ToString(), CultureInfo.InvariantCulture);
-                    int episodeNumber = int.Parse(match.Groups[1].ToString(), CultureInfo.InvariantCulture);
+                    int arcNumber = int.Parse(match.Groups[1].ToString(), CultureInfo.InvariantCulture);
+                    int episodeNumber = int.Parse(match.Groups[2].ToString(), CultureInfo.InvariantCulture);
                     return (arcNumber, episodeNumber);
                 }
                 catch (FormatException)
