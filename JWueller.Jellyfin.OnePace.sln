@@ -1,6 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{CE91025B-BF04-4A2D-8361-59CFBD424249}") = "JWueller.Jellyfin.OnePace", "JWueller.Jellyfin.OnePace\JWueller.Jellyfin.OnePace.csproj", "{B22C4443-D5C2-4207-B9A4-9948087A90C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JWueller.Jellyfin.OnePace.Tests", "JWueller.Jellyfin.OnePace.Tests\JWueller.Jellyfin.OnePace.Tests.csproj", "{2BB25123-B572-4517-B51D-31D034055D33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -11,5 +13,9 @@ Global
 		{B22C4443-D5C2-4207-B9A4-9948087A90C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B22C4443-D5C2-4207-B9A4-9948087A90C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B22C4443-D5C2-4207-B9A4-9948087A90C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BB25123-B572-4517-B51D-31D034055D33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BB25123-B572-4517-B51D-31D034055D33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BB25123-B572-4517-B51D-31D034055D33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BB25123-B572-4517-B51D-31D034055D33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
