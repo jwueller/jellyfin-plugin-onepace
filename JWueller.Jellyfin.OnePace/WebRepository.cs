@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,6 +37,28 @@ public class WebRepository : IRepository
         _httpClientFactory = httpClientFactory;
         _memoryCache = memoryCache;
         _log = logger;
+    }
+
+    private async Task<string> PostOrFetchAsync(string url, string parameters, CancellationToken cancellationToken)
+    {
+        return await _memoryCache.GetOrCreateAsync(url, async cacheEntry =>
+        {
+            _log.LogTrace("Fetching: {0}", url);
+
+            var response = await _httpClientFactory.CreateClient(NamedClient.Default).PostAsync(url, new StringContent(parameters, Encoding.UTF8, "application/json"), cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            // TODO: Try to honor the returned caching headers?
+            cacheEntry.SlidingExpiration = TimeSpan.FromHours(1);
+
+            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        }).ConfigureAwait(false);
+    }
+
+    private async Task<JsonElement?> PostOrFetchJsonAsync(string url, string parameters, CancellationToken cancellationToken)
+    {
+        var json = await PostOrFetchAsync(url, parameters, cancellationToken).ConfigureAwait(false);
+        return JsonDocument.Parse(json).RootElement;
     }
 
     private async Task<string> GetOrFetchAsync(string url, CancellationToken cancellationToken)
@@ -87,55 +110,13 @@ public class WebRepository : IRepository
 
     private async Task<JsonElement?> GetOrFetchRawContentAsync(CancellationToken cancellationToken)
     {
-        const string Query = @"
-            query {
-                databaseGetAllArcs {
-                    part,
-                    title,
-                    manga_chapters,
-                    released_date,
+        const string Query = "{\"query\": \"{ databaseGetAllArcs { part, title, manga_chapters, released_date, translations { title, description, language { code } }, images { src, width }, episodes { part, title, manga_chapters, released_date, translations { title, description, language { code } }, images { src, width } } } }\"}";
 
-                    translations {
-                        title,
-                        description,
-                        language {
-                            code,
-                        },
-                    },
-
-                    images {
-                        src,
-                        width,
-                    },
-
-                    episodes {
-                        part,
-                        title,
-                        manga_chapters,
-                        released_date,
-
-                        translations {
-                            title,
-                            description,
-                            language {
-                                code,
-                            },
-                        },
-
-                        images {
-                            src,
-                            width,
-                        },
-                    }
-                }
-            }
-        ";
-
-        var url = string.Format(CultureInfo.InvariantCulture, "https://onepace.net/api/graphql?query={0}", Uri.EscapeDataString(Query));
+        const string Url = "https://onepace.net/api/graphql";
 
         try
         {
-            return await GetOrFetchJsonAsync(url, cancellationToken).ConfigureAwait(false);
+            return await PostOrFetchJsonAsync(Url, Query, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
