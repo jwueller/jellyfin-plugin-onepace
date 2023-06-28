@@ -225,8 +225,11 @@ public class WebRepositoryTests
                             Content = new StringContent(MetadataDeResponse),
                         });
                     }
+                }
 
-                    if (request.RequestUri.AbsoluteUri.StartsWith("https://onepace.net/api/graphql") && request.RequestUri.Query.Contains("databaseGetAllArcs"))
+                if (request.RequestUri != null && request.Method == HttpMethod.Post)
+                {
+                    if (request.RequestUri.AbsoluteUri.StartsWith("https://onepace.net/api/graphql") && request.Content != null && request.Content.ReadAsStringAsync(_).Result.Contains("databaseGetAllArcs"))
                     {
                         return Task.FromResult(new HttpResponseMessage
                         {
