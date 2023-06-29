@@ -20,7 +20,7 @@ namespace JWueller.Jellyfin.OnePace;
 public class WebRepository : IRepository
 {
     private const string FallbackLanguageCode = "en";
-    private static readonly string FallbackRawLanguageCode = ToRawLanguageCode(FallbackLanguageCode);
+    private static readonly string FallbackApiLanguageCode = ToApiLanguageCode(FallbackLanguageCode);
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMemoryCache _memoryCache;
@@ -121,7 +121,7 @@ public class WebRepository : IRepository
     }
 
     // One Pace doesn't quite seem to follow the same locales that Jellyfin does, so we do some best-effort mapping here.
-    private static string ToRawLanguageCode(string languageCode)
+    private static string ToApiLanguageCode(string languageCode)
     {
         if (languageCode.Equals("zh", StringComparison.OrdinalIgnoreCase))
         {
@@ -131,14 +131,14 @@ public class WebRepository : IRepository
         return languageCode.Replace("-", "_", StringComparison.InvariantCultureIgnoreCase);
     }
 
-    private static string ToLanguageCode(string rawLanguageCode)
+    private static string ToLanguageCode(string apiLanguageCode)
     {
-        if (rawLanguageCode.Equals("zh_cn", StringComparison.OrdinalIgnoreCase))
+        if (apiLanguageCode.Equals("zh_cn", StringComparison.OrdinalIgnoreCase))
         {
             return "zh";
         }
 
-        return rawLanguageCode.Replace("_", "-", StringComparison.InvariantCultureIgnoreCase);
+        return apiLanguageCode.Replace("_", "-", StringComparison.InvariantCultureIgnoreCase);
     }
 
     private static bool LanguageCodesEqual(string a, string b)
@@ -146,37 +146,41 @@ public class WebRepository : IRepository
         return string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static JsonElement? ChooseBestRawTranslation(JsonElement.ArrayEnumerator rawCandidates, string rawLanguageCode)
+    private static JsonElement? ChooseBestApiTranslation(JsonElement.ArrayEnumerator apiCandidates, string apiLanguageCode)
     {
-        foreach (var rawCandidate in rawCandidates)
+        while (true)
         {
-            if (LanguageCodesEqual(rawCandidate.GetProperty("language").GetProperty("code").GetNonNullString(), rawLanguageCode))
+            foreach (var apiCandidate in apiCandidates)
             {
-                return rawCandidate;
+                if (LanguageCodesEqual(apiCandidate.GetProperty("language").GetProperty("code").GetNonNullString(), apiLanguageCode))
+                {
+                    return apiCandidate;
+                }
             }
-        }
 
-        // Fall back to a known good translation that should always be present.
-        if (!LanguageCodesEqual(rawLanguageCode, FallbackRawLanguageCode))
-        {
-            return ChooseBestRawTranslation(rawCandidates, FallbackRawLanguageCode);
-        }
+            // Fall back to a known good translation that should always be present and try again.
+            if (!LanguageCodesEqual(apiLanguageCode, FallbackApiLanguageCode))
+            {
+                apiLanguageCode = FallbackApiLanguageCode;
+                continue;
+            }
 
-        return null;
+            return null;
+        }
     }
 
-    private async Task<JsonElement?> FindRawArcByNumberAsync(int arcNumber, CancellationToken cancellationToken)
+    private async Task<JsonElement?> FindApiArcByNumberAsync(int arcNumber, CancellationToken cancellationToken)
     {
         try
         {
-            var rawResponse = await GetOrFetchRawContentAsync(cancellationToken).ConfigureAwait(false);
-            if (rawResponse != null)
+            var apiResponse = await FetchContentAsync(cancellationToken).ConfigureAwait(false);
+            if (apiResponse != null)
             {
-                foreach (var rawArc in rawResponse.Value.GetProperty("data").GetProperty("databaseGetAllArcs").EnumerateArray())
+                foreach (var apiArc in apiResponse.Value.GetProperty("data").GetProperty("databaseGetAllArcs").EnumerateArray())
                 {
-                    if (rawArc.GetProperty("part").GetInt32() == arcNumber)
+                    if (apiArc.GetProperty("part").GetInt32() == arcNumber)
                     {
-                        return rawArc;
+                        return apiArc;
                     }
                 }
             }
@@ -190,16 +194,16 @@ public class WebRepository : IRepository
         return null;
     }
 
-    private async Task<JsonElement?> FindRawEpisodeByNumberAsync(int arcNumber, int episodeNumber, CancellationToken cancellationToken)
+    private async Task<JsonElement?> FindApiEpisodeByNumberAsync(int arcNumber, int episodeNumber, CancellationToken cancellationToken)
     {
-        var rawArc = await FindRawArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
-        if (rawArc != null)
+        var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
+        if (apiArc != null)
         {
-            foreach (var rawEpisode in rawArc.Value.GetProperty("episodes").EnumerateArray())
+            foreach (var apiEpisode in apiArc.Value.GetProperty("episodes").EnumerateArray())
             {
-                if (rawEpisode.GetProperty("part").GetInt32() == episodeNumber)
+                if (apiEpisode.GetProperty("part").GetInt32() == episodeNumber)
                 {
-                    return rawEpisode;
+                    return apiEpisode;
                 }
             }
         }
@@ -212,8 +216,8 @@ public class WebRepository : IRepository
     {
         try
         {
-            var rawResponse = await GetOrFetchRawMetadataAsync(FallbackRawLanguageCode, cancellationToken).ConfigureAwait(false);
-            if (rawResponse != null)
+            var apiMetadata = await FetchMetadataAsync(FallbackApiLanguageCode, cancellationToken).ConfigureAwait(false);
+            if (apiMetadata != null)
             {
                 return new RepositorySeries();
             }
@@ -234,12 +238,12 @@ public class WebRepository : IRepository
 
         try
         {
-            var rawResponse = await GetOrFetchRawContentAsync(cancellationToken).ConfigureAwait(false);
-            if (rawResponse != null)
+            var apiContent = await FetchContentAsync(cancellationToken).ConfigureAwait(false);
+            if (apiContent != null)
             {
-                foreach (var rawArc in rawResponse.Value.GetProperty("data").GetProperty("databaseGetAllArcs").EnumerateArray())
+                foreach (var apiArc in apiContent.Value.GetProperty("data").GetProperty("databaseGetAllArcs").EnumerateArray())
                 {
-                    results.Add(new RepositoryArc(rawArc));
+                    results.Add(new RepositoryArc(apiArc));
                 }
             }
         }
@@ -255,10 +259,10 @@ public class WebRepository : IRepository
     /// <inheritdoc/>
     public async Task<IArc?> FindArcByNumberAsync(int arcNumber, CancellationToken cancellationToken)
     {
-        var rawArc = await FindRawArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
-        if (rawArc != null)
+        var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
+        if (apiArc != null)
         {
-            return new RepositoryArc(rawArc.Value);
+            return new RepositoryArc(apiArc.Value);
         }
 
         return null;
@@ -271,14 +275,14 @@ public class WebRepository : IRepository
 
         try
         {
-            var rawResponse = await GetOrFetchRawContentAsync(cancellationToken).ConfigureAwait(false);
-            if (rawResponse != null)
+            var apiResponse = await FetchContentAsync(cancellationToken).ConfigureAwait(false);
+            if (apiResponse != null)
             {
-                foreach (var rawArc in rawResponse.Value.GetProperty("data").GetProperty("databaseGetAllArcs").EnumerateArray())
+                foreach (var apiArc in apiResponse.Value.GetProperty("data").GetProperty("databaseGetAllArcs").EnumerateArray())
                 {
-                    foreach (var rawEpisode in rawArc.GetProperty("episodes").EnumerateArray())
+                    foreach (var apiEpisode in apiArc.GetProperty("episodes").EnumerateArray())
                     {
-                        results.Add(new RepositoryEpisode(rawArc.GetProperty("part").GetInt32(), rawEpisode));
+                        results.Add(new RepositoryEpisode(apiArc.GetProperty("part").GetInt32(), apiEpisode));
                     }
                 }
             }
@@ -295,10 +299,10 @@ public class WebRepository : IRepository
     /// <inheritdoc/>
     public async Task<IEpisode?> FindEpisodeByNumberAsync(int arcNumber, int episodeNumber, CancellationToken cancellationToken)
     {
-        var rawEpisode = await FindRawEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
-        if (rawEpisode != null)
+        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
+        if (apiEpisode != null)
         {
-            return new RepositoryEpisode(arcNumber, rawEpisode.Value);
+            return new RepositoryEpisode(arcNumber, apiEpisode.Value);
         }
 
         return null;
@@ -323,12 +327,12 @@ public class WebRepository : IRepository
     {
         var results = new List<IArt>();
 
-        var rawArc = await FindRawArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
-        if (rawArc != null)
+        var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
+        if (apiArc != null)
         {
-            foreach (var rawImage in rawArc.Value.GetProperty("images").EnumerateArray())
+            foreach (var apiImage in apiArc.Value.GetProperty("images").EnumerateArray())
             {
-                results.Add(new RepositoryArt("https://onepace.net/images/arcs/", rawImage));
+                results.Add(new RepositoryArt("https://onepace.net/images/arcs/", apiImage));
             }
         }
 
@@ -340,12 +344,12 @@ public class WebRepository : IRepository
     {
         var results = new List<IArt>();
 
-        var rawEpisode = await FindRawEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
-        if (rawEpisode != null)
+        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
+        if (apiEpisode != null)
         {
-            foreach (var rawImage in rawEpisode.Value.GetProperty("images").EnumerateArray())
+            foreach (var apiImage in apiEpisode.Value.GetProperty("images").EnumerateArray())
             {
-                results.Add(new RepositoryArt("https://onepace.net/images/episodes/", rawImage));
+                results.Add(new RepositoryArt("https://onepace.net/images/episodes/", apiImage));
             }
         }
 
@@ -357,10 +361,10 @@ public class WebRepository : IRepository
     {
         try
         {
-            var rawResponse = await GetOrFetchRawMetadataAsync(ToRawLanguageCode(languageCode), cancellationToken).ConfigureAwait(false);
-            if (rawResponse != null)
+            var apiMetadata = await FetchMetadataAsync(ToApiLanguageCode(languageCode), cancellationToken).ConfigureAwait(false);
+            if (apiMetadata != null)
             {
-                return new RepositoryLocalization(languageCode, rawResponse.Value);
+                return new RepositoryLocalization(languageCode, apiMetadata.Value);
             }
 
             // Try to fall back to a known good language code if the requested one is not available. This mirrors the
@@ -386,13 +390,13 @@ public class WebRepository : IRepository
     /// <inheritdoc/>
     public async Task<ILocalization?> FindBestArcLocalizationAsync(int arcNumber, string languageCode, CancellationToken cancellationToken)
     {
-        var rawArc = await FindRawArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
-        if (rawArc != null)
+        var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
+        if (apiArc != null)
         {
-            var rawTranslation = ChooseBestRawTranslation(rawArc.Value.GetProperty("translations").EnumerateArray(), ToRawLanguageCode(languageCode));
-            if (rawTranslation != null)
+            var apiTranslation = ChooseBestApiTranslation(apiArc.Value.GetProperty("translations").EnumerateArray(), ToApiLanguageCode(languageCode));
+            if (apiTranslation != null)
             {
-                return new RepositoryLocalization(rawTranslation.Value);
+                return new RepositoryLocalization(apiTranslation.Value);
             }
         }
 
@@ -402,13 +406,13 @@ public class WebRepository : IRepository
     /// <inheritdoc/>
     public async Task<ILocalization?> FindBestEpisodeLocalizationAsync(int arcNumber, int episodeNumber, string languageCode, CancellationToken cancellationToken)
     {
-        var rawEpisode = await FindRawEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
-        if (rawEpisode != null)
+        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
+        if (apiEpisode != null)
         {
-            var rawTranslation = ChooseBestRawTranslation(rawEpisode.Value.GetProperty("translations").EnumerateArray(), ToRawLanguageCode(languageCode));
-            if (rawTranslation != null)
+            var apiTranslation = ChooseBestApiTranslation(apiEpisode.Value.GetProperty("translations").EnumerateArray(), ToApiLanguageCode(languageCode));
+            if (apiTranslation != null)
             {
-                return new RepositoryLocalization(rawTranslation.Value);
+                return new RepositoryLocalization(apiTranslation.Value);
             }
         }
 
@@ -435,12 +439,12 @@ public class WebRepository : IRepository
 
     private sealed class RepositoryArc : IArc
     {
-        public RepositoryArc(JsonElement rawArc)
+        public RepositoryArc(JsonElement apiArc)
         {
-            Number = rawArc.GetProperty("part").GetInt32();
-            InvariantTitle = rawArc.GetProperty("title").GetNonNullString();
-            MangaChapters = rawArc.GetProperty("manga_chapters").GetNonNullString();
-            ReleaseDate = ParseReleaseDate(rawArc.GetProperty("released_date"));
+            Number = apiArc.GetProperty("part").GetInt32();
+            InvariantTitle = apiArc.GetProperty("title").GetNonNullString();
+            MangaChapters = apiArc.GetProperty("manga_chapters").GetNonNullString();
+            ReleaseDate = ParseReleaseDate(apiArc.GetProperty("released_date"));
         }
 
         public int Number { get; }
@@ -454,13 +458,13 @@ public class WebRepository : IRepository
 
     private sealed class RepositoryEpisode : IEpisode
     {
-        public RepositoryEpisode(int arcNumber, JsonElement rawEpisode)
+        public RepositoryEpisode(int arcNumber, JsonElement apiEpisode)
         {
-            Number = rawEpisode.GetProperty("part").GetInt32();
+            Number = apiEpisode.GetProperty("part").GetInt32();
             ArcNumber = arcNumber;
-            InvariantTitle = rawEpisode.GetProperty("title").GetNonNullString();
-            MangaChapters = rawEpisode.GetProperty("manga_chapters").GetNonNullString();
-            ReleaseDate = ParseReleaseDate(rawEpisode.GetProperty("released_date"));
+            InvariantTitle = apiEpisode.GetProperty("title").GetNonNullString();
+            MangaChapters = apiEpisode.GetProperty("manga_chapters").GetNonNullString();
+            ReleaseDate = ParseReleaseDate(apiEpisode.GetProperty("released_date"));
         }
 
         public int Number { get; }
@@ -481,10 +485,10 @@ public class WebRepository : IRepository
             Url = url;
         }
 
-        public RepositoryArt(string baseUrl, JsonElement rawImage)
+        public RepositoryArt(string baseUrl, JsonElement apiImage)
         {
-            Url = baseUrl + rawImage.GetProperty("src").GetNonNullString();
-            Width = rawImage.GetProperty("width").CoerceNullableInt32();
+            Url = baseUrl + apiImage.GetProperty("src").GetNonNullString();
+            Width = apiImage.GetProperty("width").CoerceNullableInt32();
         }
 
         public string Url { get; }
@@ -496,21 +500,21 @@ public class WebRepository : IRepository
 
     private sealed class RepositoryLocalization : ILocalization
     {
-        public RepositoryLocalization(string languageCode, JsonElement rawTranslation)
+        public RepositoryLocalization(string languageCode, JsonElement apiTranslation)
         {
             LanguageCode = languageCode;
 
-            var rawTitle = rawTranslation.GetProperty("meta-title").GetString();
-            Title = rawTitle != null ? rawTitle.Split("|")[0].Trim() : "One Pace";
+            var apiTitle = apiTranslation.GetProperty("meta-title").GetString();
+            Title = apiTitle != null ? apiTitle.Split("|")[0].Trim() : "One Pace";
 
-            Description = rawTranslation.GetProperty("meta-description").GetString();
+            Description = apiTranslation.GetProperty("meta-description").GetString();
         }
 
-        public RepositoryLocalization(JsonElement rawTranslation)
+        public RepositoryLocalization(JsonElement apiTranslation)
         {
-            LanguageCode = ToLanguageCode(rawTranslation.GetProperty("language").GetProperty("code").GetNonNullString());
-            Title = rawTranslation.GetProperty("title").GetNonNullString();
-            Description = rawTranslation.GetProperty("description").GetString();
+            LanguageCode = ToLanguageCode(apiTranslation.GetProperty("language").GetProperty("code").GetNonNullString());
+            Title = apiTranslation.GetProperty("title").GetNonNullString();
+            Description = apiTranslation.GetProperty("description").GetString();
         }
 
         public string LanguageCode { get; }

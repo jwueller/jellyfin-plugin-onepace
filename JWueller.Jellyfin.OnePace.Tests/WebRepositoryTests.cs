@@ -204,7 +204,7 @@ public class WebRepositoryTests
         httpMessageHandlerMock
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .Returns((HttpRequestMessage request, CancellationToken _) =>
+            .Returns((HttpRequestMessage request, CancellationToken cancellationToken) =>
             {
                 if (request.RequestUri != null && request.Method == HttpMethod.Get)
                 {
@@ -229,7 +229,7 @@ public class WebRepositoryTests
 
                 if (request.RequestUri != null && request.Method == HttpMethod.Post)
                 {
-                    if (request.RequestUri.AbsoluteUri.StartsWith("https://onepace.net/api/graphql") && request.Content != null && request.Content.ReadAsStringAsync(_).Result.Contains("databaseGetAllArcs"))
+                    if (request.RequestUri.AbsoluteUri == "https://onepace.net/api/graphql" && request.Content != null && request.Content.ReadAsStringAsync(cancellationToken).Result.Contains("databaseGetAllArcs"))
                     {
                         return Task.FromResult(new HttpResponseMessage
                         {
