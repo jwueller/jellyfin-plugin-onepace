@@ -39,57 +39,43 @@ public class WebRepository : IRepository
         _log = logger;
     }
 
-    private async Task<string> PostOrFetchAsync(string url, string parameters, CancellationToken cancellationToken)
+    private async Task<string> FetchStringResponseAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        return await _memoryCache.GetOrCreateAsync(url, async cacheEntry =>
+        return await _memoryCache.GetOrCreateAsync(request, async cacheEntry =>
         {
-            _log.LogTrace("Fetching: {0}", url);
+            _log.LogTrace("Fetching: {Request}", request.ToString());
 
-            var response = await _httpClientFactory.CreateClient(NamedClient.Default).PostAsync(url, new StringContent(parameters, Encoding.UTF8, "application/json"), cancellationToken).ConfigureAwait(false);
+            var client = _httpClientFactory.CreateClient(NamedClient.Default);
+            var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
-            // TODO: Try to honor the returned caching headers?
-            cacheEntry.SlidingExpiration = TimeSpan.FromHours(1);
+            // Honor some common caching headers, if present.
+            cacheEntry.SlidingExpiration = response.Headers.CacheControl?.MaxAge;
+            cacheEntry.AbsoluteExpiration = response.Content.Headers.Expires;
+
+            // Fall back to a default expiration if no explicit one was set.
+            if (!cacheEntry.SlidingExpiration.HasValue && !cacheEntry.AbsoluteExpiration.HasValue)
+            {
+                cacheEntry.SlidingExpiration = TimeSpan.FromHours(1);
+            }
 
             return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         }).ConfigureAwait(false);
     }
 
-    private async Task<JsonElement?> PostOrFetchJsonAsync(string url, string parameters, CancellationToken cancellationToken)
+    private async Task<JsonElement?> FetchJsonResponseAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var json = await PostOrFetchAsync(url, parameters, cancellationToken).ConfigureAwait(false);
+        var json = await FetchStringResponseAsync(request, cancellationToken).ConfigureAwait(false);
         return JsonDocument.Parse(json).RootElement;
     }
 
-    private async Task<string> GetOrFetchAsync(string url, CancellationToken cancellationToken)
+    private async Task<JsonElement?> FetchMetadataAsync(string apiLanguageCode, CancellationToken cancellationToken)
     {
-        return await _memoryCache.GetOrCreateAsync(url, async cacheEntry =>
-        {
-            _log.LogTrace("Fetching: {0}", url);
-
-            var response = await _httpClientFactory.CreateClient(NamedClient.Default).GetAsync(url, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            // TODO: Try to honor the returned caching headers?
-            cacheEntry.SlidingExpiration = TimeSpan.FromHours(1);
-
-            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        }).ConfigureAwait(false);
-    }
-
-    private async Task<JsonElement?> GetOrFetchJsonAsync(string url, CancellationToken cancellationToken)
-    {
-        var json = await GetOrFetchAsync(url, cancellationToken).ConfigureAwait(false);
-        return JsonDocument.Parse(json).RootElement;
-    }
-
-    private async Task<JsonElement?> GetOrFetchRawMetadataAsync(string rawLanguageCode, CancellationToken cancellationToken)
-    {
-        var url = string.Format(CultureInfo.InvariantCulture, "https://onepace.net/static/locales/{0}/home.json", rawLanguageCode);
+        var url = string.Format(CultureInfo.InvariantCulture, "https://onepace.net/static/locales/{0}/home.json", apiLanguageCode);
 
         try
         {
-            return await GetOrFetchJsonAsync(url, cancellationToken).ConfigureAwait(false);
+            return await FetchJsonResponseAsync(new HttpRequestMessage(HttpMethod.Get, url), cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
@@ -102,21 +88,22 @@ public class WebRepository : IRepository
             }
             else
             {
-                _log.LogWarning(ex, "Failed to fetch One Pace metadata for language code: {0}", rawLanguageCode);
+                _log.LogWarning(ex, "Failed to fetch One Pace metadata for language code: {LanguageCode}", apiLanguageCode);
                 throw;
             }
         }
     }
 
-    private async Task<JsonElement?> GetOrFetchRawContentAsync(CancellationToken cancellationToken)
+    private async Task<JsonElement?> FetchContentAsync(CancellationToken cancellationToken)
     {
-        const string Query = "{\"query\": \"{ databaseGetAllArcs { part, title, manga_chapters, released_date, translations { title, description, language { code } }, images { src, width }, episodes { part, title, manga_chapters, released_date, translations { title, description, language { code } }, images { src, width } } } }\"}";
-
         const string Url = "https://onepace.net/api/graphql";
+        const string Query = "{\"query\": \"{ databaseGetAllArcs { part, title, manga_chapters, released_date, translations { title, description, language { code } }, images { src, width }, episodes { part, title, manga_chapters, released_date, translations { title, description, language { code } }, images { src, width } } } }\"}";
 
         try
         {
-            return await PostOrFetchJsonAsync(Url, Query, cancellationToken).ConfigureAwait(false);
+            var message = new HttpRequestMessage(HttpMethod.Post, Url);
+            message.Content = new StringContent(Query, Encoding.UTF8, "application/json");
+            return await FetchJsonResponseAsync(message, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
