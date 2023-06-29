@@ -13,9 +13,9 @@ public class ArcIdentifierTests
     {
         public int Number { get; init; }
 
-        public string InvariantTitle { get; init; }
+        public string InvariantTitle { get; init; } = null!;
 
-        public string MangaChapters { get; init; }
+        public string MangaChapters { get; init; } = null!;
 
         public DateTime? ReleaseDate { get; init; }
     }

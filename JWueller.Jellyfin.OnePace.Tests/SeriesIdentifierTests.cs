@@ -11,9 +11,9 @@ public class SeriesIdentifierTests
 
     private class TestSeries : ISeries
     {
-        public string InvariantTitle { get; init; }
+        public string InvariantTitle { get; init; } = null!;
 
-        public string OriginalTitle { get; init; }
+        public string OriginalTitle { get; init; } = null!;
     }
 
     public SeriesIdentifierTests()
