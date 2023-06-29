@@ -41,10 +41,8 @@ public class WebRepository : IRepository
 
     private async Task<string> FetchStringResponseAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        return await _memoryCache.GetOrCreateAsync(request, async cacheEntry =>
+        return await _memoryCache.GetOrCreateAsync(request.RequestUri, async cacheEntry =>
         {
-            _log.LogTrace("Fetching: {Request}", request.ToString());
-
             var client = _httpClientFactory.CreateClient(NamedClient.Default);
             var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
