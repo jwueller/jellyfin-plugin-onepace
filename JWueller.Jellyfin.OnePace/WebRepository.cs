@@ -43,18 +43,30 @@ public class WebRepository : IRepository
     {
         return await _memoryCache.GetOrCreateAsync(request.RequestUri, async cacheEntry =>
         {
+            _log.LogTrace("{Method} {Uri}", request.Method, request.RequestUri);
+
             var client = _httpClientFactory.CreateClient(NamedClient.Default);
             var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             // Honor some common caching headers, if present.
-            cacheEntry.SlidingExpiration = response.Headers.CacheControl?.MaxAge;
-            cacheEntry.AbsoluteExpiration = response.Content.Headers.Expires;
-
-            // Fall back to a default expiration if no explicit one was set.
-            if (!cacheEntry.SlidingExpiration.HasValue && !cacheEntry.AbsoluteExpiration.HasValue)
+            var noCache = response.Headers.CacheControl?.NoCache;
+            var maxAge = response.Headers.CacheControl?.MaxAge;
+            if ((noCache != null && noCache.Value) || maxAge <= TimeSpan.Zero)
             {
-                cacheEntry.SlidingExpiration = TimeSpan.FromHours(1);
+                // Caching is actively forbidden!
+                cacheEntry.AbsoluteExpiration = DateTimeOffset.MinValue;
+            }
+            else
+            {
+                cacheEntry.SlidingExpiration = maxAge;
+                cacheEntry.AbsoluteExpiration = response.Content.Headers.Expires;
+
+                // Fall back to a reasonable default expiration if no explicit one was set.
+                if (!cacheEntry.SlidingExpiration.HasValue && !cacheEntry.AbsoluteExpiration.HasValue)
+                {
+                    cacheEntry.SlidingExpiration = TimeSpan.FromHours(1);
+                }
             }
 
             return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
