@@ -10,38 +10,36 @@ namespace JWueller.Jellyfin.OnePace.Tests;
 public class WebRepositoryTests
 {
     // language=JSON
-    private const string MetadataEnResponse = """
-        {
-            "meta-title": "One Pace | english tagline",
-            "meta-description": "English description"
-        }
-    """;
-
-    // language=JSON
-    private const string MetadataDeResponse = """
-        {
-            "meta-title": "One Pace | Deutscher Slogan",
-            "meta-description": "Deutsche Beschreibung"
-        }
-    """;
-
-    // language=JSON
-    private const string ContentResponse = """
+    private const string MetadataResponse = """
         {
             "data": {
-                "databaseGetAllArcs": [
+                "series": {
+                      "invariant_title": "One Pace",
+                      "translations": [
+                            {
+                                  "title": "One Pace en",
+                                  "description": "English description",
+                                  "language_code": "en"
+                            },
+                            {
+                                  "title": "One Pace de",
+                                  "description": "Deutsche Beschreibung",
+                                  "language_code": "de"
+                            }
+                      ]
+                },
+
+                "arcs": [
                     {
                         "part": 1,
-                        "title": "Romance Dawn",
+                        "invariant_title": "Romance Dawn",
                         "manga_chapters": "1-7",
-                        "released_date": "2020-12-02T12:00:00Z",
+                        "released_at": "2020-12-02T12:00:00Z",
                         "translations": [
                             {
                                 "title": "Romance Dawn en",
                                 "description": "English description for Romance Dawn",
-                                "language": {
-                                    "code": "en"
-                                }
+                                "language_code": "en"
                             }
                         ],
                         "images": [
@@ -65,23 +63,19 @@ public class WebRepositoryTests
                         "episodes": [
                             {
                                 "part": 1,
-                                "title": "Romance Dawn 01",
+                                "invariant_title": "Romance Dawn 01",
                                 "manga_chapters": "1",
-                                "released_date": "2020-12-02T12:00:00Z",
+                                "released_at": "2020-12-02T12:00:00Z",
                                 "translations": [
                                     {
                                         "title": "Romance Dawn 01 de",
                                         "description": "Deutsche Beschreibung für Romance Dawn 01",
-                                        "language": {
-                                            "code": "de"
-                                        }
+                                        "language_code": "de"
                                     },
                                     {
                                         "title": "Romance Dawn 01 en",
                                         "description": "English description for Romance Dawn 01",
-                                        "language": {
-                                            "code": "en"
-                                        }
+                                        "language_code": "en"
                                     }
                                 ],
                                 "images": [
@@ -101,23 +95,19 @@ public class WebRepositoryTests
                             },
                             {
                                 "part": 2,
-                                "title": "Romance Dawn 02",
+                                "invariant_title": "Romance Dawn 02",
                                 "manga_chapters": "2",
-                                "released_date": "2020-12-02T12:00:00Z",
+                                "released_at": "2020-12-02T12:00:00Z",
                                 "translations": [
                                     {
                                         "title": "Romance Dawn 02 de",
                                         "description": "Deutsche Beschreibung für Romance Dawn 02",
-                                        "language": {
-                                            "code": "de"
-                                        }
+                                        "language_code": "de"
                                     },
                                     {
                                         "title": "Romance Dawn 02 en",
                                         "description": "English description for Romance Dawn 02",
-                                        "language": {
-                                            "code": "en"
-                                        }
+                                        "language_code": "en"
                                     }
                                 ],
                                 "images": [
@@ -126,28 +116,32 @@ public class WebRepositoryTests
                                         "width": "480"
                                     }
                                 ]
+                            },
+                            {
+                                "part": 3,
+                                "invariant_title": "Romance Dawn 03",
+                                "manga_chapters": null,
+                                "released_at": null,
+                                "translations": [],
+                                "images": []
                             }
                         ]
                     },
                     {
                         "part": 2,
-                        "title": "Orange Town",
+                        "invariant_title": "Orange Town",
                         "manga_chapters": "8-21",
-                        "released_date": "2021-08-07T12:00:00Z",
+                        "released_at": "2021-08-07T12:00:00Z",
                         "translations": [
                             {
                                 "title": "Orange Town de",
                                 "description": "Deutsche Beschreibung für Orange Town",
-                                "language": {
-                                    "code": "de"
-                                }
+                                "language_code": "de"
                             },
                             {
                                 "title": "Orange Town en",
                                 "description": "English description for Orange Town",
-                                "language": {
-                                    "code": "en"
-                                }
+                                "language_code": "en"
                             }
                         ],
                         "images": [
@@ -159,23 +153,19 @@ public class WebRepositoryTests
                         "episodes": [
                             {
                                 "part": 1,
-                                "title": "Orange Town 01",
+                                "invariant_title": "Orange Town 01",
                                 "manga_chapters": "8-11",
-                                "released_date": "2021-08-07T12:00:00Z",
+                                "released_at": "2021-08-07T12:00:00Z",
                                 "translations": [
                                     {
                                         "title": "Orange Town 01 de",
                                         "description": "Deutsche Beschreibung für Orange Town 01",
-                                        "language": {
-                                            "code": "de"
-                                        }
+                                        "language_code": "de"
                                     },
                                     {
                                         "title": "Orange Town 01 en",
                                         "description": "English description for Orange Town 01",
-                                        "language": {
-                                            "code": "en"
-                                        }
+                                        "language_code": "en"
                                     }
                                 ],
                                 "images": [
@@ -206,35 +196,18 @@ public class WebRepositoryTests
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .Returns((HttpRequestMessage request, CancellationToken cancellationToken) =>
             {
-                if (request.RequestUri != null && request.Method == HttpMethod.Get)
+                if (request.RequestUri != null &&
+                    request.Method == HttpMethod.Post &&
+                    request.RequestUri.AbsoluteUri == "https://onepace.net/api/graphql" &&
+                    request.Content != null)
                 {
-                    if (request.RequestUri.AbsoluteUri == "https://onepace.net/static/locales/en/home.json")
+                    var requestContent = request.Content.ReadAsStringAsync(cancellationToken).Result;
+                    if (requestContent.Contains("series") && requestContent.Contains("arcs"))
                     {
                         return Task.FromResult(new HttpResponseMessage
                         {
                             StatusCode = HttpStatusCode.OK,
-                            Content = new StringContent(MetadataEnResponse),
-                        });
-                    }
-
-                    if (request.RequestUri.AbsoluteUri == "https://onepace.net/static/locales/de/home.json")
-                    {
-                        return Task.FromResult(new HttpResponseMessage
-                        {
-                            StatusCode = HttpStatusCode.OK,
-                            Content = new StringContent(MetadataDeResponse),
-                        });
-                    }
-                }
-
-                if (request.RequestUri != null && request.Method == HttpMethod.Post)
-                {
-                    if (request.RequestUri.AbsoluteUri == "https://onepace.net/api/graphql" && request.Content != null && request.Content.ReadAsStringAsync(cancellationToken).Result.Contains("databaseGetAllArcs"))
-                    {
-                        return Task.FromResult(new HttpResponseMessage
-                        {
-                            StatusCode = HttpStatusCode.OK,
-                            Content = new StringContent(ContentResponse),
+                            Content = new StringContent(MetadataResponse),
                         });
                     }
                 }
@@ -246,9 +219,11 @@ public class WebRepositoryTests
             });
 
         var httpClientFactoryMock = new Mock<IHttpClientFactory>(MockBehavior.Strict);
-        httpClientFactoryMock.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(() => new HttpClient(httpMessageHandlerMock.Object));
+        httpClientFactoryMock.Setup(factory => factory.CreateClient(It.IsAny<string>()))
+            .Returns(() => new HttpClient(httpMessageHandlerMock.Object));
 
-        _webRepository = new WebRepository(httpClientFactoryMock.Object, new MemoryCache(new MemoryCacheOptions()), NullLogger<WebRepository>.Instance);
+        _webRepository = new WebRepository(httpClientFactoryMock.Object, new MemoryCache(new MemoryCacheOptions()),
+            NullLogger<WebRepository>.Instance);
     }
 
     [Fact]
@@ -280,6 +255,7 @@ public class WebRepositoryTests
         Assert.Collection(result,
             episode => Assert.Equal("Romance Dawn 01", episode.InvariantTitle),
             episode => Assert.Equal("Romance Dawn 02", episode.InvariantTitle),
+            episode => Assert.Equal("Romance Dawn 03", episode.InvariantTitle),
             episode => Assert.Equal("Orange Town 01", episode.InvariantTitle));
     }
 
@@ -297,6 +273,7 @@ public class WebRepositoryTests
     [Theory]
     [InlineData(1, 1, "Romance Dawn 01")]
     [InlineData(1, 2, "Romance Dawn 02")]
+    [InlineData(1, 3, "Romance Dawn 03")]
     [InlineData(2, 1, "Orange Town 01")]
     public async void ShouldFindEpisodeByNumber(int arcNumber, int episodeNumber, string expectedInvariantTitle)
     {
@@ -307,10 +284,11 @@ public class WebRepositoryTests
     }
 
     [Theory]
-    [InlineData("en", "One Pace", "English description")]
-    [InlineData("de", "One Pace", "Deutsche Beschreibung")]
-    [InlineData("invalid", "One Pace", "English description")] // fallback
-    public async void ShouldFindBestSeriesLocalization(string languageCode, string expectedTitle, string expectedDescription)
+    [InlineData("en", "One Pace en", "English description")]
+    [InlineData("de", "One Pace de", "Deutsche Beschreibung")]
+    [InlineData("invalid", "One Pace en", "English description")] // fallback
+    public async void ShouldFindBestSeriesLocalization(string languageCode, string expectedTitle,
+        string expectedDescription)
     {
         var result = await _webRepository.FindBestSeriesLocalizationAsync(languageCode, CancellationToken.None);
 
@@ -324,7 +302,8 @@ public class WebRepositoryTests
     [InlineData(2, "en", "Orange Town en", "English description for Orange Town")]
     [InlineData(2, "de", "Orange Town de", "Deutsche Beschreibung für Orange Town")]
     [InlineData(2, "invalid", "Orange Town en", "English description for Orange Town")] // fallback
-    public async void ShouldFindBestArcLocalization(int arcNumber, string languageCode, string expectedTitle, string expectedDescription)
+    public async void ShouldFindBestArcLocalization(int arcNumber, string languageCode, string expectedTitle,
+        string expectedDescription)
     {
         var result = await _webRepository.FindBestArcLocalizationAsync(arcNumber, languageCode, CancellationToken.None);
 
@@ -337,9 +316,12 @@ public class WebRepositoryTests
     [InlineData(1, 1, "de", "Romance Dawn 01 de", "Deutsche Beschreibung für Romance Dawn 01")]
     [InlineData(1, 1, "en", "Romance Dawn 01 en", "English description for Romance Dawn 01")]
     [InlineData(1, 1, "invalid", "Romance Dawn 01 en", "English description for Romance Dawn 01")] // fallback
-    public async void ShouldFindBestEpisodeLocalization(int arcNumber, int episodeNumber, string languageCode, string expectedTitle, string expectedDescription)
+    public async void ShouldFindBestEpisodeLocalization(int arcNumber, int episodeNumber, string languageCode,
+        string expectedTitle, string expectedDescription)
     {
-        var result = await _webRepository.FindBestEpisodeLocalizationAsync(arcNumber, episodeNumber, languageCode, CancellationToken.None);
+        var result =
+            await _webRepository.FindBestEpisodeLocalizationAsync(arcNumber, episodeNumber, languageCode,
+                CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(expectedTitle, result.Title);
@@ -385,5 +367,4 @@ public class WebRepositoryTests
         Assert.NotNull(result);
         Assert.Equal(result.Count, expectedCoverArtCount);
     }
-
 }

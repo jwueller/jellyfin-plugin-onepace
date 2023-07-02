@@ -18,7 +18,7 @@ public interface IArc
 
     string InvariantTitle { get; } // e.g. "Romance Dawn"
 
-    string MangaChapters { get; }
+    string? MangaChapters { get; }
 
     DateTime? ReleaseDate { get; }
 }
@@ -31,7 +31,7 @@ public interface IEpisode
 
     string InvariantTitle { get; } // e.g. "Romance Dawn 01"
 
-    string MangaChapters { get; }
+    string? MangaChapters { get; }
 
     DateTime? ReleaseDate { get; }
 }

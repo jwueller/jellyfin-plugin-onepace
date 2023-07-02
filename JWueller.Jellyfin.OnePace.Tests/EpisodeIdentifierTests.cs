@@ -17,7 +17,7 @@ public class EpisodeIdentifierTests
 
         public string InvariantTitle { get; init; } = null!;
 
-        public string MangaChapters { get; init; } = null!;
+        public string? MangaChapters { get; init; }
 
         public DateTime? ReleaseDate { get; init; }
     }
@@ -52,6 +52,15 @@ public class EpisodeIdentifierTests
                 MangaChapters = "8-11",
                 ReleaseDate = null,
             },
+
+            new TestEpisode
+            {
+                Number = 2,
+                ArcNumber = 2,
+                InvariantTitle = "Orange Town 02",
+                MangaChapters = null,
+                ReleaseDate = null,
+            },
         };
 
         var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
@@ -73,6 +82,7 @@ public class EpisodeIdentifierTests
     [InlineData(1, 1, "Romance Dawn 01")]
     [InlineData(1, 2, "Romance Dawn 02")]
     [InlineData(2, 1, "Orange Town 01")]
+    [InlineData(2, 2, "Orange Town 02")]
     public async void ShouldIdentifyArcByProviderId(int arcNumber, int episodeNumber, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo();
@@ -95,6 +105,7 @@ public class EpisodeIdentifierTests
     [InlineData("/path/to/One Pace/[One Pace][8-11] Orange Town 01 [480p][A2F5F372].mkv", 2, 1, "Orange Town 01")] // release name
     [InlineData("/path/to/One Pace/8-11.mkv", 2, 1, "Orange Town 01")] // chapter range
     [InlineData("/path/to/One Pace/Orange Town 01.mkv", 2, 1, "Orange Town 01")] // title
+    [InlineData("/path/to/One Pace/[One Pace][11-16] Orange Town 02 [480p][3D7957D8].mkv", 2, 2, "Orange Town 02")] // release name
     public async void ShouldIdentifyEpisodeByPath(string path, int expectedArcNumber, int expectedEpisodeNumber, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo

@@ -39,11 +39,12 @@ public class WebRepository : IRepository
         _log = logger;
     }
 
-    private async Task<string> FetchStringResponseAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    private async Task<JsonElement> QueryGraphQlAsync(string query, CancellationToken cancellationToken)
     {
-        return await _memoryCache.GetOrCreateAsync(request.RequestUri, async cacheEntry =>
+        return await _memoryCache.GetOrCreateAsync(query, async cacheEntry =>
         {
-            _log.LogTrace("{Method} {Uri}", request.Method, request.RequestUri);
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://onepace.net/api/graphql");
+            request.Content = new StringContent(JsonSerializer.Serialize(new { query }), Encoding.UTF8, "application/json");
 
             var client = _httpClientFactory.CreateClient(NamedClient.Default);
             var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -69,61 +70,28 @@ public class WebRepository : IRepository
                 }
             }
 
-            return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return document.RootElement.GetProperty("data");
         }).ConfigureAwait(false);
     }
 
-    private async Task<JsonElement?> FetchJsonResponseAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    private async Task<JsonElement?> FetchMetadataAsync(CancellationToken cancellationToken)
     {
-        var json = await FetchStringResponseAsync(request, cancellationToken).ConfigureAwait(false);
-        return JsonDocument.Parse(json).RootElement;
-    }
-
-    private async Task<JsonElement?> FetchMetadataAsync(string apiLanguageCode, CancellationToken cancellationToken)
-    {
-        var url = string.Format(CultureInfo.InvariantCulture, "https://onepace.net/static/locales/{0}/home.json", apiLanguageCode);
-
         try
         {
-            return await FetchJsonResponseAsync(new HttpRequestMessage(HttpMethod.Get, url), cancellationToken).ConfigureAwait(false);
+            const string Query = "{series{invariant_title translations{title description language_code}}arcs{part invariant_title manga_chapters released_at translations{title description language_code}images{src width}episodes{part invariant_title manga_chapters released_at translations{title description language_code}images{src width}}}}";
+            return await QueryGraphQlAsync(Query, cancellationToken).ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
             if (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                // This means that the language code is not supported upstream. We can't do anything about it, but the
-                // consumer should be able to handle it and fall back to something reasonable. This is not strictly an
-                // error.
-                return null;
+                _log.LogError(ex, "Could not find the One Pace metadata, please report a bug at https://github.com/jwueller/jellyfin-plugin-onepace if this happened on the latest version");
             }
             else
             {
-                _log.LogWarning(ex, "Failed to fetch One Pace metadata for language code: {LanguageCode}", apiLanguageCode);
-                throw;
-            }
-        }
-    }
-
-    private async Task<JsonElement?> FetchContentAsync(CancellationToken cancellationToken)
-    {
-        const string Url = "https://onepace.net/api/graphql";
-        const string Query = "{\"query\": \"{ databaseGetAllArcs { part, title, manga_chapters, released_date, translations { title, description, language { code } }, images { src, width }, episodes { part, title, manga_chapters, released_date, translations { title, description, language { code } }, images { src, width } } } }\"}";
-
-        try
-        {
-            var message = new HttpRequestMessage(HttpMethod.Post, Url);
-            message.Content = new StringContent(Query, Encoding.UTF8, "application/json");
-            return await FetchJsonResponseAsync(message, cancellationToken).ConfigureAwait(false);
-        }
-        catch (HttpRequestException ex)
-        {
-            if (ex.StatusCode == HttpStatusCode.NotFound)
-            {
-                _log.LogError(ex, "Could not find the One Pace content data, please report a bug at https://github.com/jwueller/jellyfin-plugin-onepace if this happened on the latest version");
-            }
-            else
-            {
-                _log.LogWarning(ex, "Failed to fetch One Pace content data");
+                _log.LogWarning(ex, "Failed to fetch One Pace metadata");
             }
 
             throw;
@@ -162,7 +130,7 @@ public class WebRepository : IRepository
         {
             foreach (var apiCandidate in apiCandidates)
             {
-                if (LanguageCodesEqual(apiCandidate.GetProperty("language").GetProperty("code").GetNonNullString(), apiLanguageCode))
+                if (LanguageCodesEqual(apiCandidate.GetProperty("language_code").GetNonNullString(), apiLanguageCode))
                 {
                     return apiCandidate;
                 }
@@ -183,10 +151,10 @@ public class WebRepository : IRepository
     {
         try
         {
-            var apiResponse = await FetchContentAsync(cancellationToken).ConfigureAwait(false);
-            if (apiResponse != null)
+            var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
+            if (apiMetadata != null)
             {
-                foreach (var apiArc in apiResponse.Value.GetProperty("data").GetProperty("databaseGetAllArcs").EnumerateArray())
+                foreach (var apiArc in apiMetadata.Value.GetProperty("arcs").EnumerateArray())
                 {
                     if (apiArc.GetProperty("part").GetInt32() == arcNumber)
                     {
@@ -226,10 +194,11 @@ public class WebRepository : IRepository
     {
         try
         {
-            var apiMetadata = await FetchMetadataAsync(FallbackApiLanguageCode, cancellationToken).ConfigureAwait(false);
+            var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
             if (apiMetadata != null)
             {
-                return new RepositorySeries();
+                var apiSeries = apiMetadata.Value.GetProperty("series");
+                return new RepositorySeries(apiSeries);
             }
         }
         catch (HttpRequestException)
@@ -248,10 +217,10 @@ public class WebRepository : IRepository
 
         try
         {
-            var apiContent = await FetchContentAsync(cancellationToken).ConfigureAwait(false);
-            if (apiContent != null)
+            var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
+            if (apiMetadata != null)
             {
-                foreach (var apiArc in apiContent.Value.GetProperty("data").GetProperty("databaseGetAllArcs").EnumerateArray())
+                foreach (var apiArc in apiMetadata.Value.GetProperty("arcs").EnumerateArray())
                 {
                     results.Add(new RepositoryArc(apiArc));
                 }
@@ -285,10 +254,10 @@ public class WebRepository : IRepository
 
         try
         {
-            var apiResponse = await FetchContentAsync(cancellationToken).ConfigureAwait(false);
-            if (apiResponse != null)
+            var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
+            if (apiMetadata != null)
             {
-                foreach (var apiArc in apiResponse.Value.GetProperty("data").GetProperty("databaseGetAllArcs").EnumerateArray())
+                foreach (var apiArc in apiMetadata.Value.GetProperty("arcs").EnumerateArray())
                 {
                     foreach (var apiEpisode in apiArc.GetProperty("episodes").EnumerateArray())
                     {
@@ -371,20 +340,14 @@ public class WebRepository : IRepository
     {
         try
         {
-            var apiMetadata = await FetchMetadataAsync(ToApiLanguageCode(languageCode), cancellationToken).ConfigureAwait(false);
+            var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
             if (apiMetadata != null)
             {
-                return new RepositoryLocalization(languageCode, apiMetadata.Value);
-            }
-
-            // Try to fall back to a known good language code if the requested one is not available. This mirrors the
-            // behavior of the other localization resolvers.
-            if (languageCode != FallbackLanguageCode)
-            {
-                var fallbackLocalization = await FindBestSeriesLocalizationAsync(FallbackLanguageCode, cancellationToken).ConfigureAwait(false);
-                if (fallbackLocalization != null)
+                var apiSeries = apiMetadata.Value.GetProperty("series");
+                var apiTranslation = ChooseBestApiTranslation(apiSeries.GetProperty("translations").EnumerateArray(), ToApiLanguageCode(languageCode));
+                if (apiTranslation != null)
                 {
-                    return fallbackLocalization;
+                    return new RepositoryLocalization(apiTranslation.Value);
                 }
             }
         }
@@ -442,8 +405,14 @@ public class WebRepository : IRepository
 
     private sealed class RepositorySeries : ISeries
     {
-        public string InvariantTitle => "One Pace";
+        public RepositorySeries(JsonElement apiSeries)
+        {
+            InvariantTitle = apiSeries.GetProperty("invariant_title").GetNonNullString();
+        }
 
+        public string InvariantTitle { get; }
+
+        // TODO: This should become part of the ILocalization interface in the future when the API starts exposing it.
         public string OriginalTitle => "One Piece";
     }
 
@@ -452,16 +421,16 @@ public class WebRepository : IRepository
         public RepositoryArc(JsonElement apiArc)
         {
             Number = apiArc.GetProperty("part").GetInt32();
-            InvariantTitle = apiArc.GetProperty("title").GetNonNullString();
-            MangaChapters = apiArc.GetProperty("manga_chapters").GetNonNullString();
-            ReleaseDate = ParseReleaseDate(apiArc.GetProperty("released_date"));
+            InvariantTitle = apiArc.GetProperty("invariant_title").GetNonNullString();
+            MangaChapters = apiArc.GetProperty("manga_chapters").GetString();
+            ReleaseDate = ParseReleaseDate(apiArc.GetProperty("released_at"));
         }
 
         public int Number { get; }
 
         public string InvariantTitle { get; }
 
-        public string MangaChapters { get; }
+        public string? MangaChapters { get; }
 
         public DateTime? ReleaseDate { get; }
     }
@@ -472,9 +441,9 @@ public class WebRepository : IRepository
         {
             Number = apiEpisode.GetProperty("part").GetInt32();
             ArcNumber = arcNumber;
-            InvariantTitle = apiEpisode.GetProperty("title").GetNonNullString();
-            MangaChapters = apiEpisode.GetProperty("manga_chapters").GetNonNullString();
-            ReleaseDate = ParseReleaseDate(apiEpisode.GetProperty("released_date"));
+            InvariantTitle = apiEpisode.GetProperty("invariant_title").GetNonNullString();
+            MangaChapters = apiEpisode.GetProperty("manga_chapters").GetString();
+            ReleaseDate = ParseReleaseDate(apiEpisode.GetProperty("released_at"));
         }
 
         public int Number { get; }
@@ -483,7 +452,7 @@ public class WebRepository : IRepository
 
         public string InvariantTitle { get; }
 
-        public string MangaChapters { get; }
+        public string? MangaChapters { get; }
 
         public DateTime? ReleaseDate { get; }
     }
@@ -510,19 +479,9 @@ public class WebRepository : IRepository
 
     private sealed class RepositoryLocalization : ILocalization
     {
-        public RepositoryLocalization(string languageCode, JsonElement apiTranslation)
-        {
-            LanguageCode = languageCode;
-
-            var apiTitle = apiTranslation.GetProperty("meta-title").GetString();
-            Title = apiTitle != null ? apiTitle.Split("|")[0].Trim() : "One Pace";
-
-            Description = apiTranslation.GetProperty("meta-description").GetString();
-        }
-
         public RepositoryLocalization(JsonElement apiTranslation)
         {
-            LanguageCode = ToLanguageCode(apiTranslation.GetProperty("language").GetProperty("code").GetNonNullString());
+            LanguageCode = ToLanguageCode(apiTranslation.GetProperty("language_code").GetNonNullString());
             Title = apiTranslation.GetProperty("title").GetNonNullString();
             Description = apiTranslation.GetProperty("description").GetString();
         }

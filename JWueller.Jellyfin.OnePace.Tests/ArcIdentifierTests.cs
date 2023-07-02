@@ -15,7 +15,7 @@ public class ArcIdentifierTests
 
         public string InvariantTitle { get; init; } = null!;
 
-        public string MangaChapters { get; init; } = null!;
+        public string? MangaChapters { get; init; }
 
         public DateTime? ReleaseDate { get; init; }
     }
@@ -39,6 +39,14 @@ public class ArcIdentifierTests
                 MangaChapters = "8-21",
                 ReleaseDate = null,
             },
+
+            new TestArc
+            {
+                Number = 3,
+                InvariantTitle = "Syrup Village",
+                MangaChapters = null,
+                ReleaseDate = null,
+            },
         };
 
         var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
@@ -59,6 +67,7 @@ public class ArcIdentifierTests
     [Theory]
     [InlineData(1, "Romance Dawn")]
     [InlineData(2, "Orange Town")]
+    [InlineData(3, "Syrup Village")]
     public async void ShouldIdentifyArcByProviderId(int arcNumber, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo();
@@ -78,6 +87,7 @@ public class ArcIdentifierTests
     [InlineData("/path/to/One Pace/1", 1, "Romance Dawn")] // number
     [InlineData("/path/to/One Pace/001", 1, "Romance Dawn")] // number (padded)
     [InlineData("/path/to/One Pace/[One Pace][8-21] Orange Town [1080p]", 2, "Orange Town")] // release name
+    [InlineData("/path/to/One Pace/[One Pace][23-41] Syrup Village [480p]", 3, "Syrup Village")] // release name
     public async void ShouldIdentifyArcByPath(string path, int expectedArcNumber, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo
