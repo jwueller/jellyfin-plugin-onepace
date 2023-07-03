@@ -68,6 +68,12 @@ public class ArcImageProvider : IRemoteImageProvider, IHasOrder
             }
         }
 
+        _log.LogInformation(
+            "Found {Count} arc image(s) for {Item}: {Result}",
+            result.Count,
+            System.Text.Json.JsonSerializer.Serialize(item),
+            System.Text.Json.JsonSerializer.Serialize(result));
+
         return result;
     }
 

@@ -9,6 +9,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
+using Microsoft.Extensions.Logging;
 
 namespace JWueller.Jellyfin.OnePace;
 
@@ -20,16 +21,19 @@ public class SeriesImageProvider : IRemoteImageProvider, IHasOrder
 {
     private readonly IRepository _repository;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly ILogger<SeriesImageProvider> _log;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SeriesImageProvider"/> class.
     /// </summary>
     /// <param name="repository">The One Pace repository.</param>
     /// <param name="httpClientFactory">The HTTP client factory used to fetch images.</param>
-    public SeriesImageProvider(IRepository repository, IHttpClientFactory httpClientFactory)
+    /// <param name="logger">The log target for this class.</param>
+    public SeriesImageProvider(IRepository repository, IHttpClientFactory httpClientFactory, ILogger<SeriesImageProvider> logger)
     {
         _repository = repository;
         _httpClientFactory = httpClientFactory;
+        _log = logger;
     }
 
     /// <inheritdoc/>
@@ -74,6 +78,12 @@ public class SeriesImageProvider : IRemoteImageProvider, IHasOrder
                 });
             }
         }
+
+        _log.LogInformation(
+            "Found {Count} series image(s) for {Item}: {Result}",
+            result.Count,
+            System.Text.Json.JsonSerializer.Serialize(item),
+            System.Text.Json.JsonSerializer.Serialize(result));
 
         return result;
     }

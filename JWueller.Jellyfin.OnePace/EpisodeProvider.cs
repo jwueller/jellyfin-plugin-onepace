@@ -70,6 +70,11 @@ public class EpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IH
             }
         }
 
+        _log.LogInformation(
+            "Identified Episode {Info}: {Result}",
+            System.Text.Json.JsonSerializer.Serialize(info),
+            System.Text.Json.JsonSerializer.Serialize(result));
+
         return result;
     }
 

@@ -69,6 +69,11 @@ public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrde
             }
         }
 
+        _log.LogInformation(
+            "Identified Arc {Info}: {Result}",
+            System.Text.Json.JsonSerializer.Serialize(info),
+            System.Text.Json.JsonSerializer.Serialize(result));
+
         return result;
     }
 

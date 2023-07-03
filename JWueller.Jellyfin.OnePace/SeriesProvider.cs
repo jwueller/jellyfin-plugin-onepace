@@ -62,13 +62,20 @@ public class SeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasO
             result.Item.SetProviderId("AniDB", "69"); // https://anidb.net/anime/69
             result.Item.SetProviderId("AniList", "21"); // https://anilist.co/anime/21/ONE-PIECE/
 
-            var localization = await _repository.FindBestSeriesLocalizationAsync(info.MetadataLanguage ?? "en", cancellationToken).ConfigureAwait(false);
+            var localization = await _repository
+                .FindBestSeriesLocalizationAsync(info.MetadataLanguage ?? "en", cancellationToken)
+                .ConfigureAwait(false);
             if (localization != null)
             {
                 result.Item.Name = localization.Title;
                 result.Item.Overview = localization.Description;
             }
         }
+
+        _log.LogInformation(
+            "Identified Series {Info}: {Result}",
+            System.Text.Json.JsonSerializer.Serialize(info),
+            System.Text.Json.JsonSerializer.Serialize(result));
 
         return result;
     }
