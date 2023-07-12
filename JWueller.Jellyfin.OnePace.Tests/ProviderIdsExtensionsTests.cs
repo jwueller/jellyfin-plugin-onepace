@@ -3,7 +3,7 @@ using Xunit;
 
 namespace JWueller.Jellyfin.OnePace.Tests;
 
-public class ProviderIdExtensionsTests
+public class ProviderIdsExtensionsTests
 {
     [Fact]
     public void ShouldNotIdentifySeriesWithoutProviderId()
