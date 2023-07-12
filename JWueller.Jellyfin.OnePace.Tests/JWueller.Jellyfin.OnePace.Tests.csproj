@@ -22,7 +22,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Jellyfin.Controller" Version="10.8.0" />
+    <PackageReference Include="Jellyfin.Controller" Version="10.8.4" />
     <PackageReference Include="Jellyfin.Model" Version="10.8.0" />
   </ItemGroup>
   <ItemGroup>
