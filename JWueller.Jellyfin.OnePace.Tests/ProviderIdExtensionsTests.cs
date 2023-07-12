@@ -93,7 +93,7 @@ public class ProviderIdExtensionsTests
 
         Assert.NotNull(result);
 
-        var (arcNumber, episodeNumber) = result.Value;
+        var (arcNumber, episodeNumber) = result!.Value;
         Assert.Equal(expectedArcNumber, arcNumber);
         Assert.Equal(expectedEpisodeNumber, episodeNumber);
     }
