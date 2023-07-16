@@ -5,3 +5,4 @@ bin/
 obj/
 watch.json
 *.user
+jprm.yaml

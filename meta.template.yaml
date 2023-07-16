@@ -1,0 +1,12 @@
+---
+name: "One Pace"
+guid: "1c0bf35e-3df4-47cc-8a4e-e3865de60d2f"
+targetAbi: "10.8.0.0"
+framework: "net6.0"
+overview: "Metadata and cover art integration for the One Pace project"
+description: >-
+  Please report bugs at https://github.com/jwueller/jellyfin-plugin-onepace
+category: "Metadata"
+owner: "jwueller"
+artifacts:
+- "JWueller.Jellyfin.OnePace.dll"
