@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,7 +30,10 @@ public class ArcImageProvider : IRemoteImageProvider, IHasOrder
     /// <param name="repository">The One Pace repository.</param>
     /// <param name="httpClientFactory">The HTTP client factory used to fetch images.</param>
     /// <param name="logger">The log target for this class.</param>
-    public ArcImageProvider(IRepository repository, IHttpClientFactory httpClientFactory, ILogger<ArcImageProvider> logger)
+    public ArcImageProvider(
+        IRepository repository,
+        IHttpClientFactory httpClientFactory,
+        ILogger<ArcImageProvider> logger)
     {
         _repository = repository;
         _httpClientFactory = httpClientFactory;
@@ -46,30 +50,36 @@ public class ArcImageProvider : IRemoteImageProvider, IHasOrder
     public bool Supports(BaseItem item) => item is Season;
 
     /// <inheritdoc/>
-    public IEnumerable<ImageType> GetSupportedImages(BaseItem item) => new List<ImageType> { ImageType.Primary };
+    public IEnumerable<ImageType> GetSupportedImages(BaseItem item) => new List<ImageType>
+    {
+        ImageType.Primary
+    };
 
     /// <inheritdoc/>
     public async Task<IEnumerable<RemoteImageInfo>> GetImages(BaseItem item, CancellationToken cancellationToken)
     {
         var result = new List<RemoteImageInfo>();
 
-        var match = await ArcIdentifier.IdentifyAsync(_repository, ((Season)item).GetLookupInfo(), cancellationToken).ConfigureAwait(false);
+        var match = await ArcIdentifier
+            .IdentifyAsync(_repository, ((Season)item).GetLookupInfo(), cancellationToken)
+            .ConfigureAwait(false);
         if (match != null)
         {
-            foreach (var coverArt in await _repository.FindAllArcCoverArtAsync(match.Number, cancellationToken).ConfigureAwait(false))
+            var coverArts = await _repository
+                .FindAllArcCoverArtAsync(match.Number, cancellationToken)
+                .ConfigureAwait(false);
+
+            result.AddRange(coverArts.Select(coverArt => new RemoteImageInfo
             {
-                result.Add(new RemoteImageInfo
-                {
-                    Type = ImageType.Primary,
-                    Url = coverArt.Url,
-                    Width = coverArt.Width,
-                    ProviderName = Name,
-                });
-            }
+                Type = ImageType.Primary,
+                Url = coverArt.Url,
+                Width = coverArt.Width,
+                ProviderName = Name,
+            }));
         }
 
         _log.LogInformation(
-            "Found {Count} arc image(s) for {Item}: {Result}",
+            "Found {Count} arc image(s) for {Item} --> {Result}",
             result.Count,
             System.Text.Json.JsonSerializer.Serialize(item),
             System.Text.Json.JsonSerializer.Serialize(result));

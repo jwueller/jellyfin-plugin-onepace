@@ -35,14 +35,13 @@ internal static class JsonElementExtensions
             {
                 return int.Parse(jsonElement.GetNonNullString(), NumberStyles.Integer, CultureInfo.InvariantCulture);
             }
-            else if (jsonElement.ValueKind == JsonValueKind.Number)
+
+            if (jsonElement.ValueKind == JsonValueKind.Number)
             {
                 return jsonElement.GetInt32();
             }
-            else
-            {
-                throw new FormatException("Expected a string or number");
-            }
+
+            throw new FormatException("Expected a string or number");
         }
 
         return null;

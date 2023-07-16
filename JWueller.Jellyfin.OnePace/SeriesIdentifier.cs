@@ -6,7 +6,10 @@ namespace JWueller.Jellyfin.OnePace;
 
 internal static class SeriesIdentifier
 {
-    public static async Task<Model.ISeries?> IdentifyAsync(IRepository repository, ItemLookupInfo itemLookupInfo, CancellationToken cancellationToken)
+    public static async Task<Model.ISeries?> IdentifyAsync(
+        IRepository repository,
+        ItemLookupInfo itemLookupInfo,
+        CancellationToken cancellationToken)
     {
         if (itemLookupInfo.GetIsOnePaceSeries()
             || IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Name)

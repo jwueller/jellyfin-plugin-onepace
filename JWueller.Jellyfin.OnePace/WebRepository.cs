@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -44,7 +45,13 @@ public class WebRepository : IRepository
         return await _memoryCache.GetOrCreateAsync(query, async cacheEntry =>
         {
             var request = new HttpRequestMessage(HttpMethod.Post, "https://onepace.net/api/graphql");
-            request.Content = new StringContent(JsonSerializer.Serialize(new { query }), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(
+                JsonSerializer.Serialize(new
+                {
+                    query
+                }),
+                Encoding.UTF8,
+                "application/json");
 
             var client = _httpClientFactory.CreateClient(NamedClient.Default);
             var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
@@ -71,7 +78,9 @@ public class WebRepository : IRepository
             }
 
             var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            var document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var document = await JsonDocument
+                .ParseAsync(stream, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             return document.RootElement.GetProperty("data");
         }).ConfigureAwait(false);
     }
@@ -80,14 +89,19 @@ public class WebRepository : IRepository
     {
         try
         {
-            const string Query = "{series{invariant_title translations{title description language_code}}arcs{part invariant_title manga_chapters released_at translations{title description language_code}images{src width}episodes{part invariant_title manga_chapters released_at translations{title description language_code}images{src width}}}}";
-            return await QueryGraphQlAsync(Query, cancellationToken).ConfigureAwait(false);
+            // language=graphql
+            return await QueryGraphQlAsync(
+                    @"{series{invariant_title translations{title description language_code}}arcs{part invariant_title manga_chapters released_at translations{title description language_code}images{src width}episodes{part invariant_title manga_chapters released_at translations{title description language_code}images{src width}}}}",
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
             if (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                _log.LogError(ex, "Could not find the One Pace metadata, please report a bug at https://github.com/jwueller/jellyfin-plugin-onepace if this happened on the latest version");
+                _log.LogError(ex, "Could not find the One Pace metadata, please report a bug at" +
+                                  " https://github.com/jwueller/jellyfin-plugin-onepace if this happened on the" +
+                                  " latest version");
             }
             else
             {
@@ -124,27 +138,22 @@ public class WebRepository : IRepository
         return string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static JsonElement? ChooseBestApiTranslation(JsonElement.ArrayEnumerator apiCandidates, string apiLanguageCode)
+    private static JsonElement? ChooseBestApiTranslation(
+        JsonElement.ArrayEnumerator apiCandidates,
+        string apiLanguageCode)
     {
-        while (true)
+        foreach (var apiCandidate in apiCandidates)
         {
-            foreach (var apiCandidate in apiCandidates)
+            if (LanguageCodesEqual(apiCandidate.GetProperty("language_code").GetNonNullString(), apiLanguageCode))
             {
-                if (LanguageCodesEqual(apiCandidate.GetProperty("language_code").GetNonNullString(), apiLanguageCode))
-                {
-                    return apiCandidate;
-                }
+                return apiCandidate;
             }
-
-            // Fall back to a known good translation that should always be present and try again.
-            if (!LanguageCodesEqual(apiLanguageCode, FallbackApiLanguageCode))
-            {
-                apiLanguageCode = FallbackApiLanguageCode;
-                continue;
-            }
-
-            return null;
         }
+
+        // Fall back to the next best thing.
+        return !LanguageCodesEqual(apiLanguageCode, FallbackApiLanguageCode)
+            ? ChooseBestApiTranslation(apiCandidates, FallbackApiLanguageCode)
+            : null;
     }
 
     private async Task<JsonElement?> FindApiArcByNumberAsync(int arcNumber, CancellationToken cancellationToken)
@@ -152,41 +161,25 @@ public class WebRepository : IRepository
         try
         {
             var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
-            if (apiMetadata != null)
-            {
-                foreach (var apiArc in apiMetadata.Value.GetProperty("arcs").EnumerateArray())
-                {
-                    if (apiArc.GetProperty("part").GetInt32() == arcNumber)
-                    {
-                        return apiArc;
-                    }
-                }
-            }
+            return apiMetadata?.GetProperty("arcs").EnumerateArray().FirstOrDefault(apiArc =>
+                apiArc.GetProperty("part").GetInt32() == arcNumber);
         }
         catch (HttpRequestException)
         {
             // Details should have been logged further down the stack. We just treat this data as unavailable for now
             // and the user can try again manually if they want.
+            return null;
         }
-
-        return null;
     }
 
-    private async Task<JsonElement?> FindApiEpisodeByNumberAsync(int arcNumber, int episodeNumber, CancellationToken cancellationToken)
+    private async Task<JsonElement?> FindApiEpisodeByNumberAsync(
+        int arcNumber,
+        int episodeNumber,
+        CancellationToken cancellationToken)
     {
         var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
-        if (apiArc != null)
-        {
-            foreach (var apiEpisode in apiArc.Value.GetProperty("episodes").EnumerateArray())
-            {
-                if (apiEpisode.GetProperty("part").GetInt32() == episodeNumber)
-                {
-                    return apiEpisode;
-                }
-            }
-        }
-
-        return null;
+        return apiArc?.GetProperty("episodes").EnumerateArray().FirstOrDefault(apiEpisode =>
+            apiEpisode.GetProperty("part").GetInt32() == episodeNumber);
     }
 
     /// <inheritdoc/>
@@ -195,19 +188,16 @@ public class WebRepository : IRepository
         try
         {
             var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
-            if (apiMetadata != null)
-            {
-                var apiSeries = apiMetadata.Value.GetProperty("series");
-                return new RepositorySeries(apiSeries);
-            }
+            return apiMetadata != null
+                ? new RepositorySeries(apiMetadata.Value.GetProperty("series"))
+                : null;
         }
         catch (HttpRequestException)
         {
             // Details should have been logged further down the stack. We just treat this data as unavailable for now
             // and the user can try again manually if they want.
+            return null;
         }
-
-        return null;
     }
 
     /// <inheritdoc/>
@@ -220,10 +210,8 @@ public class WebRepository : IRepository
             var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
             if (apiMetadata != null)
             {
-                foreach (var apiArc in apiMetadata.Value.GetProperty("arcs").EnumerateArray())
-                {
-                    results.Add(new RepositoryArc(apiArc));
-                }
+                results.AddRange(apiMetadata.Value.GetProperty("arcs").EnumerateArray().Select(apiArc =>
+                    new RepositoryArc(apiArc)));
             }
         }
         catch (HttpRequestException)
@@ -239,12 +227,9 @@ public class WebRepository : IRepository
     public async Task<IArc?> FindArcByNumberAsync(int arcNumber, CancellationToken cancellationToken)
     {
         var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
-        if (apiArc != null)
-        {
-            return new RepositoryArc(apiArc.Value);
-        }
-
-        return null;
+        return apiArc != null
+            ? new RepositoryArc(apiArc.Value)
+            : null;
     }
 
     /// <inheritdoc/>
@@ -257,13 +242,10 @@ public class WebRepository : IRepository
             var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
             if (apiMetadata != null)
             {
-                foreach (var apiArc in apiMetadata.Value.GetProperty("arcs").EnumerateArray())
-                {
-                    foreach (var apiEpisode in apiArc.GetProperty("episodes").EnumerateArray())
-                    {
-                        results.Add(new RepositoryEpisode(apiArc.GetProperty("part").GetInt32(), apiEpisode));
-                    }
-                }
+                results.AddRange(
+                    from apiArc in apiMetadata.Value.GetProperty("arcs").EnumerateArray()
+                    from apiEpisode in apiArc.GetProperty("episodes").EnumerateArray()
+                    select new RepositoryEpisode(apiArc.GetProperty("part").GetInt32(), apiEpisode));
             }
         }
         catch (HttpRequestException)
@@ -276,23 +258,25 @@ public class WebRepository : IRepository
     }
 
     /// <inheritdoc/>
-    public async Task<IEpisode?> FindEpisodeByNumberAsync(int arcNumber, int episodeNumber, CancellationToken cancellationToken)
+    public async Task<IEpisode?> FindEpisodeByNumberAsync(
+        int arcNumber,
+        int episodeNumber,
+        CancellationToken cancellationToken)
     {
-        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
-        if (apiEpisode != null)
-        {
-            return new RepositoryEpisode(arcNumber, apiEpisode.Value);
-        }
-
-        return null;
+        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken)
+            .ConfigureAwait(false);
+        return apiEpisode != null
+            ? new RepositoryEpisode(arcNumber, apiEpisode.Value)
+            : null;
     }
 
     /// <inheritdoc/>
     public Task<IReadOnlyCollection<IArt>> FindAllSeriesLogoArtAsync(CancellationToken cancellationToken)
     {
-        var results = new List<IArt>();
-        results.Add(new RepositoryArt("https://onepace.net/images/one-pace-logo.svg"));
-        return Task.FromResult<IReadOnlyCollection<IArt>>(results);
+        return Task.FromResult<IReadOnlyCollection<IArt>>(new List<IArt>
+        {
+            new RepositoryArt("https://onepace.net/images/one-pace-logo.svg")
+        });
     }
 
     /// <inheritdoc/>
@@ -302,74 +286,85 @@ public class WebRepository : IRepository
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<IArt>> FindAllArcCoverArtAsync(int arcNumber, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<IArt>> FindAllArcCoverArtAsync(
+        int arcNumber,
+        CancellationToken cancellationToken)
     {
         var results = new List<IArt>();
 
         var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
         if (apiArc != null)
         {
-            foreach (var apiImage in apiArc.Value.GetProperty("images").EnumerateArray())
-            {
-                results.Add(new RepositoryArt("https://onepace.net/images/arcs/", apiImage));
-            }
+            results.AddRange(apiArc.Value.GetProperty("images").EnumerateArray().Select(apiImage =>
+                new RepositoryArt("https://onepace.net/images/arcs/", apiImage)));
         }
 
         return results;
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<IArt>> FindAllEpisodeCoverArtAsync(int arcNumber, int episodeNumber, CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<IArt>> FindAllEpisodeCoverArtAsync(
+        int arcNumber,
+        int episodeNumber,
+        CancellationToken cancellationToken)
     {
         var results = new List<IArt>();
 
-        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
+        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken)
+            .ConfigureAwait(false);
         if (apiEpisode != null)
         {
-            foreach (var apiImage in apiEpisode.Value.GetProperty("images").EnumerateArray())
-            {
-                results.Add(new RepositoryArt("https://onepace.net/images/episodes/", apiImage));
-            }
+            results.AddRange(apiEpisode.Value.GetProperty("images").EnumerateArray().Select(apiImage =>
+                new RepositoryArt("https://onepace.net/images/episodes/", apiImage)));
         }
 
         return results;
     }
 
     /// <inheritdoc/>
-    public async Task<ILocalization?> FindBestSeriesLocalizationAsync(string languageCode, CancellationToken cancellationToken)
+    public async Task<ILocalization?> FindBestSeriesLocalizationAsync(
+        string languageCode,
+        CancellationToken cancellationToken)
     {
         try
         {
             var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
-            if (apiMetadata != null)
-            {
-                var apiSeries = apiMetadata.Value.GetProperty("series");
-                var apiTranslation = ChooseBestApiTranslation(apiSeries.GetProperty("translations").EnumerateArray(), ToApiLanguageCode(languageCode));
-                if (apiTranslation != null)
-                {
-                    return new RepositoryLocalization(apiTranslation.Value);
-                }
-            }
+            var apiSeries = apiMetadata?.GetProperty("series");
+
+            var bestApiTranslation = apiSeries != null
+                ? ChooseBestApiTranslation(
+                    apiSeries.Value.GetProperty("translations").EnumerateArray(),
+                    ToApiLanguageCode(languageCode))
+                : null;
+
+            return bestApiTranslation != null
+                ? new RepositoryLocalization(bestApiTranslation.Value)
+                : null;
         }
         catch (HttpRequestException)
         {
             // Details should have been logged further down the stack. We just treat this data as unavailable for now
             // and the user can try again manually if they want.
+            return null;
         }
-
-        return null;
     }
 
     /// <inheritdoc/>
-    public async Task<ILocalization?> FindBestArcLocalizationAsync(int arcNumber, string languageCode, CancellationToken cancellationToken)
+    public async Task<ILocalization?> FindBestArcLocalizationAsync(
+        int arcNumber,
+        string languageCode,
+        CancellationToken cancellationToken)
     {
         var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
         if (apiArc != null)
         {
-            var apiTranslation = ChooseBestApiTranslation(apiArc.Value.GetProperty("translations").EnumerateArray(), ToApiLanguageCode(languageCode));
-            if (apiTranslation != null)
+            var bestApiTranslation = ChooseBestApiTranslation(
+                apiArc.Value.GetProperty("translations").EnumerateArray(),
+                ToApiLanguageCode(languageCode));
+
+            if (bestApiTranslation != null)
             {
-                return new RepositoryLocalization(apiTranslation.Value);
+                return new RepositoryLocalization(bestApiTranslation.Value);
             }
         }
 
@@ -377,12 +372,20 @@ public class WebRepository : IRepository
     }
 
     /// <inheritdoc/>
-    public async Task<ILocalization?> FindBestEpisodeLocalizationAsync(int arcNumber, int episodeNumber, string languageCode, CancellationToken cancellationToken)
+    public async Task<ILocalization?> FindBestEpisodeLocalizationAsync(
+        int arcNumber,
+        int episodeNumber,
+        string languageCode,
+        CancellationToken cancellationToken)
     {
-        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
+        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken)
+            .ConfigureAwait(false);
         if (apiEpisode != null)
         {
-            var apiTranslation = ChooseBestApiTranslation(apiEpisode.Value.GetProperty("translations").EnumerateArray(), ToApiLanguageCode(languageCode));
+            var apiTranslation = ChooseBestApiTranslation(
+                apiEpisode.Value.GetProperty("translations").EnumerateArray(),
+                ToApiLanguageCode(languageCode));
+
             if (apiTranslation != null)
             {
                 return new RepositoryLocalization(apiTranslation.Value);

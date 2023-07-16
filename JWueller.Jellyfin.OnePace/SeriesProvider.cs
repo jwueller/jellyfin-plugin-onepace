@@ -73,15 +73,17 @@ public class SeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasO
         }
 
         _log.LogInformation(
-            "Identified Series {Info}: {Result}",
+            "Identified Series {Info} --> {Match}",
             System.Text.Json.JsonSerializer.Serialize(info),
-            System.Text.Json.JsonSerializer.Serialize(result));
+            System.Text.Json.JsonSerializer.Serialize(match));
 
         return result;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeriesInfo searchInfo, CancellationToken cancellationToken)
+    public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(
+        SeriesInfo searchInfo,
+        CancellationToken cancellationToken)
     {
         var result = new List<RemoteSearchResult>();
 

@@ -77,7 +77,10 @@ public interface IRepository
     /// <param name="episodeNumber">Number of the episode within an arc (1-based).</param>
     /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
     /// <returns>The art model.</returns>
-    Task<IReadOnlyCollection<IArt>> FindAllEpisodeCoverArtAsync(int arcNumber, int episodeNumber, CancellationToken cancellationToken);
+    Task<IReadOnlyCollection<IArt>> FindAllEpisodeCoverArtAsync(
+        int arcNumber,
+        int episodeNumber,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves the series localization data.
@@ -94,7 +97,10 @@ public interface IRepository
     /// <param name="languageCode">Preferred language code.</param>
     /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
     /// <returns>The arc model.</returns>
-    Task<ILocalization?> FindBestArcLocalizationAsync(int arcNumber, string languageCode, CancellationToken cancellationToken);
+    Task<ILocalization?> FindBestArcLocalizationAsync(
+        int arcNumber,
+        string languageCode,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// Retrieves the episode localization data.
@@ -104,5 +110,9 @@ public interface IRepository
     /// <param name="languageCode">Preferred language code.</param>
     /// <param name="cancellationToken">Propagates notification that the operation should be canceled.</param>
     /// <returns>The arc model.</returns>
-    Task<ILocalization?> FindBestEpisodeLocalizationAsync(int arcNumber, int episodeNumber, string languageCode, CancellationToken cancellationToken);
+    Task<ILocalization?> FindBestEpisodeLocalizationAsync(
+        int arcNumber,
+        int episodeNumber,
+        string languageCode,
+        CancellationToken cancellationToken);
 }

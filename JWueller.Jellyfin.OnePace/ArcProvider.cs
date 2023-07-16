@@ -61,7 +61,9 @@ public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrde
 
             result.Item.SetOnePaceArcNumber(match.Number);
 
-            var localization = await _repository.FindBestArcLocalizationAsync(match.Number, info.MetadataLanguage ?? "en", cancellationToken).ConfigureAwait(false);
+            var localization = await _repository
+                .FindBestArcLocalizationAsync(match.Number, info.MetadataLanguage ?? "en", cancellationToken)
+                .ConfigureAwait(false);
             if (localization != null)
             {
                 result.Item.Name = localization.Title;
@@ -70,15 +72,17 @@ public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrde
         }
 
         _log.LogInformation(
-            "Identified Arc {Info}: {Result}",
+            "Identified Arc {Info} --> {Match}",
             System.Text.Json.JsonSerializer.Serialize(info),
-            System.Text.Json.JsonSerializer.Serialize(result));
+            System.Text.Json.JsonSerializer.Serialize(match));
 
         return result;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(SeasonInfo searchInfo, CancellationToken cancellationToken)
+    public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(
+        SeasonInfo searchInfo,
+        CancellationToken cancellationToken)
     {
         var result = new List<RemoteSearchResult>();
 

@@ -8,13 +8,18 @@ namespace JWueller.Jellyfin.OnePace;
 
 internal static class EpisodeIdentifier
 {
-    public static async Task<Model.IEpisode?> IdentifyAsync(IRepository repository, ItemLookupInfo itemLookupInfo, CancellationToken cancellationToken)
+    public static async Task<Model.IEpisode?> IdentifyAsync(
+        IRepository repository,
+        ItemLookupInfo itemLookupInfo,
+        CancellationToken cancellationToken)
     {
         var episodeNumberInfo = itemLookupInfo.GetOnePaceEpisodeNumber();
         if (episodeNumberInfo != null)
         {
             var (arcNumber, episodeNumber) = episodeNumberInfo.Value;
-            var episodeInfo = await repository.FindEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken).ConfigureAwait(false);
+            var episodeInfo = await repository
+                .FindEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken)
+                .ConfigureAwait(false);
             if (episodeInfo != null)
             {
                 return episodeInfo;
@@ -36,7 +41,8 @@ internal static class EpisodeIdentifier
             {
                 if (!string.IsNullOrEmpty(episode.MangaChapters))
                 {
-                    if (Regex.IsMatch(fileName, @"\b" + Regex.Escape(episode.MangaChapters) + @"\b", RegexOptions.IgnoreCase))
+                    var pattern = @"\b" + Regex.Escape(episode.MangaChapters) + @"\b";
+                    if (Regex.IsMatch(fileName, pattern, RegexOptions.IgnoreCase))
                     {
                         return episode;
                     }
@@ -48,7 +54,8 @@ internal static class EpisodeIdentifier
             {
                 if (!string.IsNullOrEmpty(episode.InvariantTitle))
                 {
-                    if (Regex.IsMatch(fileName, @"\b" + Regex.Escape(episode.InvariantTitle) + @"\b", RegexOptions.IgnoreCase))
+                    var pattern = @"\b" + Regex.Escape(episode.InvariantTitle) + @"\b";
+                    if (Regex.IsMatch(fileName, pattern, RegexOptions.IgnoreCase))
                     {
                         return episode;
                     }

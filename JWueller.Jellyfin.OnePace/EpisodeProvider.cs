@@ -27,7 +27,10 @@ public class EpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IH
     /// <param name="repository">The One Pace repository.</param>
     /// <param name="httpClientFactory">The HTTP client factory used to fetch images.</param>
     /// <param name="logger">The log target for this class.</param>
-    public EpisodeProvider(IRepository repository, IHttpClientFactory httpClientFactory, ILogger<EpisodeProvider> logger)
+    public EpisodeProvider(
+        IRepository repository,
+        IHttpClientFactory httpClientFactory,
+        ILogger<EpisodeProvider> logger)
     {
         _repository = repository;
         _httpClientFactory = httpClientFactory;
@@ -62,7 +65,13 @@ public class EpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IH
 
             result.Item.SetOnePaceEpisodeNumber(match.ArcNumber, match.Number);
 
-            var localization = await _repository.FindBestEpisodeLocalizationAsync(match.ArcNumber, match.Number, info.MetadataLanguage ?? "en", cancellationToken).ConfigureAwait(false);
+            var localization = await _repository
+                .FindBestEpisodeLocalizationAsync(
+                    match.ArcNumber,
+                    match.Number,
+                    info.MetadataLanguage ?? "en",
+                    cancellationToken)
+                .ConfigureAwait(false);
             if (localization != null)
             {
                 result.Item.Name = localization.Title;
@@ -71,15 +80,17 @@ public class EpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IH
         }
 
         _log.LogInformation(
-            "Identified Episode {Info}: {Result}",
+            "Identified Episode {Info} --> {Match}",
             System.Text.Json.JsonSerializer.Serialize(info),
-            System.Text.Json.JsonSerializer.Serialize(result));
+            System.Text.Json.JsonSerializer.Serialize(match));
 
         return result;
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(EpisodeInfo searchInfo, CancellationToken cancellationToken)
+    public async Task<IEnumerable<RemoteSearchResult>> GetSearchResults(
+        EpisodeInfo searchInfo,
+        CancellationToken cancellationToken)
     {
         var result = new List<RemoteSearchResult>();
 
