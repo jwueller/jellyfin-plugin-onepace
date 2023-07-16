@@ -14,11 +14,8 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 6.0.x
-    - name: Install yq
-      run: |
-        sudo add-apt-repository ppa:rmescandon/yq
-        sudo apt update
-        sudo apt install yq -y
+    - name: Setup yq
+      uses: vegardit/gha-setup-yq@v1
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
