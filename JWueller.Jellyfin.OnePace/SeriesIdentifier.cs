@@ -11,7 +11,7 @@ internal static class SeriesIdentifier
         ItemLookupInfo itemLookupInfo,
         CancellationToken cancellationToken)
     {
-        if (itemLookupInfo.GetIsOnePaceSeries()
+        if (itemLookupInfo.GetOnePaceId() == Plugin.DummySeriesId
             || IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Name)
             || IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Path))
         {

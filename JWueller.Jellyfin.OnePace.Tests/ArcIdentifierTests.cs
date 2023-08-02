@@ -11,6 +11,8 @@ public class ArcIdentifierTests
 
     private class TestArc : IArc
     {
+        public string Id { get; init; } = null!;
+
         public int Number { get; init; }
 
         public string InvariantTitle { get; init; } = null!;
@@ -26,6 +28,7 @@ public class ArcIdentifierTests
         {
             new TestArc
             {
+                Id = "clkso3n3l000008l751pk86u4",
                 Number = 1,
                 InvariantTitle = "Romance Dawn",
                 MangaChapters = "1-7",
@@ -34,6 +37,7 @@ public class ArcIdentifierTests
 
             new TestArc
             {
+                Id = "clkso3uwi000108l724rj9vc0",
                 Number = 2,
                 InvariantTitle = "Orange Town",
                 MangaChapters = "8-21",
@@ -42,6 +46,7 @@ public class ArcIdentifierTests
 
             new TestArc
             {
+                Id = "clkso3zi6000208l7bhq7dtn6",
                 Number = 3,
                 InvariantTitle = "Syrup Village",
                 MangaChapters = null,
@@ -55,40 +60,39 @@ public class ArcIdentifierTests
             .Returns(Task.FromResult<IReadOnlyCollection<IArc>>(arcs));
 
         repositoryMock
-            .Setup(repository => repository.FindArcByNumberAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .Returns((int arcNumber, CancellationToken _) =>
+            .Setup(repository => repository.FindArcByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns((string id, CancellationToken _) =>
             {
-                return Task.FromResult(arcs.Find(arc => arc.Number == arcNumber));
+                return Task.FromResult(arcs.Find(arc => arc.Id == id));
             });
 
         _repository = repositoryMock.Object;
     }
 
     [Theory]
-    [InlineData(1, "Romance Dawn")]
-    [InlineData(2, "Orange Town")]
-    [InlineData(3, "Syrup Village")]
-    public async void ShouldIdentifyArcByProviderId(int arcNumber, string expectedInvariantTitle)
+    [InlineData("clkso3n3l000008l751pk86u4", "Romance Dawn")]
+    [InlineData("clkso3uwi000108l724rj9vc0", "Orange Town")]
+    [InlineData("clkso3zi6000208l7bhq7dtn6", "Syrup Village")]
+    public async void ShouldIdentifyArcByProviderId(string id, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo();
-        itemLookupInfo.SetOnePaceArcNumber(arcNumber);
+        itemLookupInfo.SetOnePaceId(id);
 
         var arc = await ArcIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
 
         Assert.NotNull(arc);
-        Assert.Equal(arcNumber, arc.Number);
         Assert.Equal(expectedInvariantTitle, arc.InvariantTitle);
     }
 
     [Theory]
-    [InlineData("/path/to/One Pace/[One Pace][1-7] Romance Dawn [1080p]", 1, "Romance Dawn")] // release name
-    [InlineData("/path/to/One Pace/1-7", 1, "Romance Dawn")] // chapter range
-    [InlineData("/path/to/One Pace/Romance Dawn", 1, "Romance Dawn")] // title
-    [InlineData("/path/to/One Pace/1", 1, "Romance Dawn")] // number
-    [InlineData("/path/to/One Pace/001", 1, "Romance Dawn")] // number (padded)
-    [InlineData("/path/to/One Pace/[One Pace][8-21] Orange Town [1080p]", 2, "Orange Town")] // release name
-    [InlineData("/path/to/One Pace/[One Pace][23-41] Syrup Village [480p]", 3, "Syrup Village")] // release name
-    public async void ShouldIdentifyArcByPath(string path, int expectedArcNumber, string expectedInvariantTitle)
+    [InlineData("/path/to/One Pace/[One Pace][1-7] Romance Dawn [1080p]", "Romance Dawn")] // release name
+    [InlineData("/path/to/One Pace/1-7", "Romance Dawn")] // chapter range
+    [InlineData("/path/to/One Pace/Romance Dawn", "Romance Dawn")] // title
+    [InlineData("/path/to/One Pace/1", "Romance Dawn")] // number
+    [InlineData("/path/to/One Pace/001", "Romance Dawn")] // number (padded)
+    [InlineData("/path/to/One Pace/[One Pace][8-21] Orange Town [1080p]", "Orange Town")] // release name
+    [InlineData("/path/to/One Pace/[One Pace][23-41] Syrup Village [480p]", "Syrup Village")] // release name
+    public async void ShouldIdentifyArcByPath(string path, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo
         {
@@ -98,7 +102,6 @@ public class ArcIdentifierTests
         var arc = await ArcIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
 
         Assert.NotNull(arc);
-        Assert.Equal(expectedArcNumber, arc.Number);
         Assert.Equal(expectedInvariantTitle, arc.InvariantTitle);
     }
 }

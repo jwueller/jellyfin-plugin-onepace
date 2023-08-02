@@ -17,6 +17,11 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     internal const string ProviderName = "One Pace";
 
     /// <summary>
+    /// The series doesn't expose an ID right now, so we just pretend this is it.
+    /// </summary>
+    internal const string DummySeriesId = "clkspj4vn000008k33lnnb4hj";
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="Plugin"/> class.
     /// </summary>
     /// <param name="applicationPaths">Instance of the <see cref="IApplicationPaths"/> interface.</param>

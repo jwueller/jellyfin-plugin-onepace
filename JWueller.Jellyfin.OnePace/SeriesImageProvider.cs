@@ -60,12 +60,12 @@ public class SeriesImageProvider : IRemoteImageProvider, IHasOrder
     {
         var result = new List<RemoteImageInfo>();
 
-        var match = await SeriesIdentifier
+        var seriesMatch = await SeriesIdentifier
             .IdentifyAsync(_repository, ((Series)item).GetLookupInfo(), cancellationToken)
             .ConfigureAwait(false);
-        if (match != null)
+        if (seriesMatch != null)
         {
-            var logoArts = await _repository.FindAllSeriesLogoArtAsync(cancellationToken).ConfigureAwait(false);
+            var logoArts = await _repository.FindAllLogoArtBySeriesAsync(cancellationToken).ConfigureAwait(false);
             result.AddRange(logoArts.Select(logoArt => new RemoteImageInfo
             {
                 Type = ImageType.Logo,
@@ -74,7 +74,7 @@ public class SeriesImageProvider : IRemoteImageProvider, IHasOrder
                 ProviderName = Name,
             }));
 
-            var coverArts = await _repository.FindAllSeriesCoverArtAsync(cancellationToken).ConfigureAwait(false);
+            var coverArts = await _repository.FindAllCoverArtBySeriesAsync(cancellationToken).ConfigureAwait(false);
             result.AddRange(coverArts.Select(coverArt => new RemoteImageInfo
             {
                 Type = ImageType.Primary,

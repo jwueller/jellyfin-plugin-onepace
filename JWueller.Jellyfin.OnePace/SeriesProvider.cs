@@ -46,24 +46,24 @@ public class SeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasO
     {
         var result = new MetadataResult<Series>();
 
-        var match = await SeriesIdentifier.IdentifyAsync(_repository, info, cancellationToken).ConfigureAwait(false);
-        if (match != null)
+        var seriesMatch = await SeriesIdentifier.IdentifyAsync(_repository, info, cancellationToken).ConfigureAwait(false);
+        if (seriesMatch != null)
         {
             result.HasMetadata = true;
             result.Provider = Name;
 
             result.Item = new Series
             {
-                Name = match.InvariantTitle,
-                OriginalTitle = match.OriginalTitle,
+                Name = seriesMatch.InvariantTitle,
+                OriginalTitle = seriesMatch.OriginalTitle,
             };
 
-            result.Item.SetIsOnePaceSeries(true);
+            result.Item.SetOnePaceId(Plugin.DummySeriesId);
             result.Item.SetProviderId("AniDB", "69"); // https://anidb.net/anime/69
             result.Item.SetProviderId("AniList", "21"); // https://anilist.co/anime/21/ONE-PIECE/
 
             var localization = await _repository
-                .FindBestSeriesLocalizationAsync(info.MetadataLanguage ?? "en", cancellationToken)
+                .FindBestLocalizationBySeriesAsync(info.MetadataLanguage ?? "en", cancellationToken)
                 .ConfigureAwait(false);
             if (localization != null)
             {
@@ -75,7 +75,7 @@ public class SeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasO
         _log.LogInformation(
             "Identified Series {Info} --> {Match}",
             System.Text.Json.JsonSerializer.Serialize(info),
-            System.Text.Json.JsonSerializer.Serialize(match));
+            System.Text.Json.JsonSerializer.Serialize(seriesMatch));
 
         return result;
     }

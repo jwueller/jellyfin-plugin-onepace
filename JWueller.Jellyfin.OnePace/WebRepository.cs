@@ -91,7 +91,7 @@ public class WebRepository : IRepository
         {
             // language=graphql
             return await QueryGraphQlAsync(
-                    @"{series{invariant_title translations{title description language_code}}arcs{part invariant_title manga_chapters released_at translations{title description language_code}images{src width}episodes{part invariant_title manga_chapters released_at translations{title description language_code}images{src width}}}}",
+                    @"{series{invariant_title translations{title description language_code}}arcs{id part invariant_title manga_chapters released_at translations{title description language_code}images{src width}episodes{id part invariant_title manga_chapters released_at crc32 translations{title description language_code}images{src width}}}}",
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -156,13 +156,13 @@ public class WebRepository : IRepository
             : null;
     }
 
-    private async Task<JsonElement?> FindApiArcByNumberAsync(int arcNumber, CancellationToken cancellationToken)
+    private async Task<JsonElement?> FindApiArcByIdAsync(string id, CancellationToken cancellationToken)
     {
         try
         {
             var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
             return apiMetadata?.GetProperty("arcs").EnumerateArray().FirstOrDefault(apiArc =>
-                apiArc.GetProperty("part").GetInt32() == arcNumber);
+                apiArc.GetProperty("id").GetNonNullString() == id);
         }
         catch (HttpRequestException)
         {
@@ -172,14 +172,22 @@ public class WebRepository : IRepository
         }
     }
 
-    private async Task<JsonElement?> FindApiEpisodeByNumberAsync(
-        int arcNumber,
-        int episodeNumber,
-        CancellationToken cancellationToken)
+    private async Task<JsonElement?> FindApiEpisodeByIdAsync(string id, CancellationToken cancellationToken)
     {
-        var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
-        return apiArc?.GetProperty("episodes").EnumerateArray().FirstOrDefault(apiEpisode =>
-            apiEpisode.GetProperty("part").GetInt32() == episodeNumber);
+        try
+        {
+            var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
+            return apiMetadata?.GetProperty("arcs").EnumerateArray()
+                .SelectMany(arc => arc.GetProperty("episodes").EnumerateArray()
+                    .Where(episode => episode.GetProperty("id").GetNonNullString() == id))
+                .FirstOrDefault();
+        }
+        catch (HttpRequestException)
+        {
+            // Details should have been logged further down the stack. We just treat this data as unavailable for now
+            // and the user can try again manually if they want.
+            return null;
+        }
     }
 
     /// <inheritdoc/>
@@ -224,9 +232,9 @@ public class WebRepository : IRepository
     }
 
     /// <inheritdoc/>
-    public async Task<IArc?> FindArcByNumberAsync(int arcNumber, CancellationToken cancellationToken)
+    public async Task<IArc?> FindArcByIdAsync(string id, CancellationToken cancellationToken)
     {
-        var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
+        var apiArc = await FindApiArcByIdAsync(id, cancellationToken).ConfigureAwait(false);
         return apiArc != null
             ? new RepositoryArc(apiArc.Value)
             : null;
@@ -245,7 +253,7 @@ public class WebRepository : IRepository
                 results.AddRange(
                     from apiArc in apiMetadata.Value.GetProperty("arcs").EnumerateArray()
                     from apiEpisode in apiArc.GetProperty("episodes").EnumerateArray()
-                    select new RepositoryEpisode(apiArc.GetProperty("part").GetInt32(), apiEpisode));
+                    select new RepositoryEpisode(apiArc.GetProperty("id").GetNonNullString(), apiEpisode));
             }
         }
         catch (HttpRequestException)
@@ -258,20 +266,17 @@ public class WebRepository : IRepository
     }
 
     /// <inheritdoc/>
-    public async Task<IEpisode?> FindEpisodeByNumberAsync(
-        int arcNumber,
-        int episodeNumber,
-        CancellationToken cancellationToken)
+    public async Task<IEpisode?> FindEpisodeByIdAsync(string id, CancellationToken cancellationToken)
     {
-        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken)
+        var apiEpisode = await FindApiEpisodeByIdAsync(id, cancellationToken)
             .ConfigureAwait(false);
         return apiEpisode != null
-            ? new RepositoryEpisode(arcNumber, apiEpisode.Value)
+            ? new RepositoryEpisode(id, apiEpisode.Value)
             : null;
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyCollection<IArt>> FindAllSeriesLogoArtAsync(CancellationToken cancellationToken)
+    public Task<IReadOnlyCollection<IArt>> FindAllLogoArtBySeriesAsync(CancellationToken cancellationToken)
     {
         return Task.FromResult<IReadOnlyCollection<IArt>>(new List<IArt>
         {
@@ -280,19 +285,19 @@ public class WebRepository : IRepository
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyCollection<IArt>> FindAllSeriesCoverArtAsync(CancellationToken cancellationToken)
+    public Task<IReadOnlyCollection<IArt>> FindAllCoverArtBySeriesAsync(CancellationToken cancellationToken)
     {
         return Task.FromResult<IReadOnlyCollection<IArt>>(new List<IArt>());
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<IArt>> FindAllArcCoverArtAsync(
-        int arcNumber,
+    public async Task<IReadOnlyCollection<IArt>> FindAllCoverArtByArcIdAsync(
+        string arcId,
         CancellationToken cancellationToken)
     {
         var results = new List<IArt>();
 
-        var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
+        var apiArc = await FindApiArcByIdAsync(arcId, cancellationToken).ConfigureAwait(false);
         if (apiArc != null)
         {
             results.AddRange(apiArc.Value.GetProperty("images").EnumerateArray().Select(apiImage =>
@@ -303,14 +308,13 @@ public class WebRepository : IRepository
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyCollection<IArt>> FindAllEpisodeCoverArtAsync(
-        int arcNumber,
-        int episodeNumber,
+    public async Task<IReadOnlyCollection<IArt>> FindAllCoverArtByEpisodeIdAsync(
+        string episodeId,
         CancellationToken cancellationToken)
     {
         var results = new List<IArt>();
 
-        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken)
+        var apiEpisode = await FindApiEpisodeByIdAsync(episodeId, cancellationToken)
             .ConfigureAwait(false);
         if (apiEpisode != null)
         {
@@ -322,7 +326,7 @@ public class WebRepository : IRepository
     }
 
     /// <inheritdoc/>
-    public async Task<ILocalization?> FindBestSeriesLocalizationAsync(
+    public async Task<ILocalization?> FindBestLocalizationBySeriesAsync(
         string languageCode,
         CancellationToken cancellationToken)
     {
@@ -350,12 +354,12 @@ public class WebRepository : IRepository
     }
 
     /// <inheritdoc/>
-    public async Task<ILocalization?> FindBestArcLocalizationAsync(
-        int arcNumber,
+    public async Task<ILocalization?> FindBestLocalizationByArcIdAsync(
+        string arcId,
         string languageCode,
         CancellationToken cancellationToken)
     {
-        var apiArc = await FindApiArcByNumberAsync(arcNumber, cancellationToken).ConfigureAwait(false);
+        var apiArc = await FindApiArcByIdAsync(arcId, cancellationToken).ConfigureAwait(false);
         if (apiArc != null)
         {
             var bestApiTranslation = ChooseBestApiTranslation(
@@ -372,13 +376,12 @@ public class WebRepository : IRepository
     }
 
     /// <inheritdoc/>
-    public async Task<ILocalization?> FindBestEpisodeLocalizationAsync(
-        int arcNumber,
-        int episodeNumber,
+    public async Task<ILocalization?> FindBestLocalizationByEpisodeIdAsync(
+        string episodeId,
         string languageCode,
         CancellationToken cancellationToken)
     {
-        var apiEpisode = await FindApiEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken)
+        var apiEpisode = await FindApiEpisodeByIdAsync(episodeId, cancellationToken)
             .ConfigureAwait(false);
         if (apiEpisode != null)
         {
@@ -423,11 +426,14 @@ public class WebRepository : IRepository
     {
         public RepositoryArc(JsonElement apiArc)
         {
+            Id = apiArc.GetProperty("id").GetNonNullString();
             Number = apiArc.GetProperty("part").GetInt32();
             InvariantTitle = apiArc.GetProperty("invariant_title").GetNonNullString();
             MangaChapters = apiArc.GetProperty("manga_chapters").GetString();
             ReleaseDate = ParseReleaseDate(apiArc.GetProperty("released_at"));
         }
+
+        public string Id { get; }
 
         public int Number { get; }
 
@@ -440,24 +446,35 @@ public class WebRepository : IRepository
 
     private sealed class RepositoryEpisode : IEpisode
     {
-        public RepositoryEpisode(int arcNumber, JsonElement apiEpisode)
+        public RepositoryEpisode(string arcId, JsonElement apiEpisode)
         {
+            Id = apiEpisode.GetProperty("id").GetNonNullString();
             Number = apiEpisode.GetProperty("part").GetInt32();
-            ArcNumber = arcNumber;
+            ArcId = arcId;
             InvariantTitle = apiEpisode.GetProperty("invariant_title").GetNonNullString();
             MangaChapters = apiEpisode.GetProperty("manga_chapters").GetString();
             ReleaseDate = ParseReleaseDate(apiEpisode.GetProperty("released_at"));
+
+            var crc32String = apiEpisode.GetProperty("crc32").GetString();
+            if (crc32String != null)
+            {
+                Crc32 = uint.Parse(crc32String, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+            }
         }
+
+        public string Id { get; }
 
         public int Number { get; }
 
-        public int ArcNumber { get; }
+        public string ArcId { get; }
 
         public string InvariantTitle { get; }
 
         public string? MangaChapters { get; }
 
         public DateTime? ReleaseDate { get; }
+
+        public uint? Crc32 { get; }
     }
 
     private sealed class RepositoryArt : IArt

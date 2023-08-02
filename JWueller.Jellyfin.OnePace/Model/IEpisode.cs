@@ -1,3 +1,5 @@
+using System;
+
 namespace JWueller.Jellyfin.OnePace.Model;
 
 /// <summary>
@@ -6,14 +8,19 @@ namespace JWueller.Jellyfin.OnePace.Model;
 public interface IEpisode
 {
     /// <summary>
+    /// Gets the CUID.
+    /// </summary>
+    string Id { get; }
+
+    /// <summary>
+    /// Gets the GUID of the arc that the episode belongs to.
+    /// </summary>
+    string ArcId { get; }
+
+    /// <summary>
     /// Gets the number of the episode within the arc.
     /// </summary>
     int Number { get; }
-
-    /// <summary>
-    /// Gets the arc number the episode belongs to.
-    /// </summary>
-    int ArcNumber { get; }
 
     /// <summary>
     /// Gets the invariant title of the episode, e.g., "Romance Dawn 01".
@@ -28,5 +35,10 @@ public interface IEpisode
     /// <summary>
     /// Gets the release date of the episode. Null if release date is unknown or the episode is unreleased.
     /// </summary>
-    System.DateTime? ReleaseDate { get; }
+    DateTime? ReleaseDate { get; }
+
+    /// <summary>
+    /// Gets the CRC-32 checksum of the episode file. Null if unknown or the episode is unreleased.
+    /// </summary>
+    uint? Crc32 { get; }
 }

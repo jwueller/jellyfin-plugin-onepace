@@ -31,6 +31,7 @@ public class WebRepositoryTests
 
                 "arcs": [
                     {
+                        "id": "clksypeix000008jw066ye7lo",
                         "part": 1,
                         "invariant_title": "Romance Dawn",
                         "manga_chapters": "1-7",
@@ -62,10 +63,12 @@ public class WebRepositoryTests
                         ],
                         "episodes": [
                             {
+                                "id": "clksyqwxl000208jw82wh3y0g",
                                 "part": 1,
                                 "invariant_title": "Romance Dawn 01",
                                 "manga_chapters": "1",
                                 "released_at": "2020-12-02T12:00:00Z",
+                                "crc32": "11000000",
                                 "translations": [
                                     {
                                         "title": "Romance Dawn 01 de",
@@ -94,10 +97,12 @@ public class WebRepositoryTests
                                 ]
                             },
                             {
+                                "id": "clksys3c2000308jwa08325o7",
                                 "part": 2,
                                 "invariant_title": "Romance Dawn 02",
                                 "manga_chapters": "2",
                                 "released_at": "2020-12-02T12:00:00Z",
+                                "crc32": "12000000",
                                 "translations": [
                                     {
                                         "title": "Romance Dawn 02 de",
@@ -118,16 +123,19 @@ public class WebRepositoryTests
                                 ]
                             },
                             {
+                                "id": "clksysvim000408jw6anzden8",
                                 "part": 3,
                                 "invariant_title": "Romance Dawn 03",
                                 "manga_chapters": null,
                                 "released_at": null,
+                                "crc32": null,
                                 "translations": [],
                                 "images": []
                             }
                         ]
                     },
                     {
+                        "id": "clksyq4q5000108jwgihd6jud",
                         "part": 2,
                         "invariant_title": "Orange Town",
                         "manga_chapters": "8-21",
@@ -152,10 +160,12 @@ public class WebRepositoryTests
                         ],
                         "episodes": [
                             {
+                                "id": "clksytlbt000508jw6r9x1jb1",
                                 "part": 1,
                                 "invariant_title": "Orange Town 01",
                                 "manga_chapters": "8-11",
                                 "released_at": "2021-08-07T12:00:00Z",
+                                "crc32": "21000000",
                                 "translations": [
                                     {
                                         "title": "Orange Town 01 de",
@@ -193,7 +203,8 @@ public class WebRepositoryTests
         var httpMessageHandlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
         httpMessageHandlerMock
             .Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
             .Returns((HttpRequestMessage request, CancellationToken cancellationToken) =>
             {
                 if (request.RequestUri != null &&
@@ -260,24 +271,24 @@ public class WebRepositoryTests
     }
 
     [Theory]
-    [InlineData(1, "Romance Dawn")]
-    [InlineData(2, "Orange Town")]
-    public async void ShouldFindArcByNumber(int arcNumber, string expectedInvariantTitle)
+    [InlineData("clksypeix000008jw066ye7lo", "Romance Dawn")]
+    [InlineData("clksyq4q5000108jwgihd6jud", "Orange Town")]
+    public async void ShouldFindArcByNumber(string arcId, string expectedInvariantTitle)
     {
-        var result = await _webRepository.FindArcByNumberAsync(arcNumber, CancellationToken.None);
+        var result = await _webRepository.FindArcByIdAsync(arcId, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(expectedInvariantTitle, result.InvariantTitle);
     }
 
     [Theory]
-    [InlineData(1, 1, "Romance Dawn 01")]
-    [InlineData(1, 2, "Romance Dawn 02")]
-    [InlineData(1, 3, "Romance Dawn 03")]
-    [InlineData(2, 1, "Orange Town 01")]
-    public async void ShouldFindEpisodeByNumber(int arcNumber, int episodeNumber, string expectedInvariantTitle)
+    [InlineData("clksyqwxl000208jw82wh3y0g", "Romance Dawn 01")]
+    [InlineData("clksys3c2000308jwa08325o7", "Romance Dawn 02")]
+    [InlineData("clksysvim000408jw6anzden8", "Romance Dawn 03")]
+    [InlineData("clksytlbt000508jw6r9x1jb1", "Orange Town 01")]
+    public async void ShouldFindEpisodeByNumber(string episodeId, string expectedInvariantTitle)
     {
-        var result = await _webRepository.FindEpisodeByNumberAsync(arcNumber, episodeNumber, CancellationToken.None);
+        var result = await _webRepository.FindEpisodeByIdAsync(episodeId, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(expectedInvariantTitle, result.InvariantTitle);
@@ -290,7 +301,7 @@ public class WebRepositoryTests
     public async void ShouldFindBestSeriesLocalization(string languageCode, string expectedTitle,
         string expectedDescription)
     {
-        var result = await _webRepository.FindBestSeriesLocalizationAsync(languageCode, CancellationToken.None);
+        var result = await _webRepository.FindBestLocalizationBySeriesAsync(languageCode, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(expectedTitle, result.Title);
@@ -298,14 +309,17 @@ public class WebRepositoryTests
     }
 
     [Theory]
-    [InlineData(1, "en", "Romance Dawn en", "English description for Romance Dawn")]
-    [InlineData(2, "en", "Orange Town en", "English description for Orange Town")]
-    [InlineData(2, "de", "Orange Town de", "Deutsche Beschreibung für Orange Town")]
-    [InlineData(2, "invalid", "Orange Town en", "English description for Orange Town")] // fallback
-    public async void ShouldFindBestArcLocalization(int arcNumber, string languageCode, string expectedTitle,
+    [InlineData("clksypeix000008jw066ye7lo", "en", "Romance Dawn en", "English description for Romance Dawn")]
+    [InlineData("clksyq4q5000108jwgihd6jud", "en", "Orange Town en", "English description for Orange Town")]
+    [InlineData("clksyq4q5000108jwgihd6jud", "de", "Orange Town de", "Deutsche Beschreibung für Orange Town")]
+    [InlineData("clksyq4q5000108jwgihd6jud", "invalid", "Orange Town en", "English description for Orange Town")] // fallback
+    public async void ShouldFindBestArcLocalization(
+        string arcId,
+        string languageCode,
+        string expectedTitle,
         string expectedDescription)
     {
-        var result = await _webRepository.FindBestArcLocalizationAsync(arcNumber, languageCode, CancellationToken.None);
+        var result = await _webRepository.FindBestLocalizationByArcIdAsync(arcId, languageCode, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(expectedTitle, result.Title);
@@ -313,15 +327,17 @@ public class WebRepositoryTests
     }
 
     [Theory]
-    [InlineData(1, 1, "de", "Romance Dawn 01 de", "Deutsche Beschreibung für Romance Dawn 01")]
-    [InlineData(1, 1, "en", "Romance Dawn 01 en", "English description for Romance Dawn 01")]
-    [InlineData(1, 1, "invalid", "Romance Dawn 01 en", "English description for Romance Dawn 01")] // fallback
-    public async void ShouldFindBestEpisodeLocalization(int arcNumber, int episodeNumber, string languageCode,
-        string expectedTitle, string expectedDescription)
+    [InlineData("clksyqwxl000208jw82wh3y0g", "de", "Romance Dawn 01 de", "Deutsche Beschreibung für Romance Dawn 01")]
+    [InlineData("clksyqwxl000208jw82wh3y0g", "en", "Romance Dawn 01 en", "English description for Romance Dawn 01")]
+    [InlineData("clksyqwxl000208jw82wh3y0g", "invalid", "Romance Dawn 01 en", "English description for Romance Dawn 01")] // fallback
+    public async void ShouldFindBestEpisodeLocalization(
+        string episodeId,
+        string languageCode,
+        string expectedTitle,
+        string expectedDescription)
     {
-        var result =
-            await _webRepository.FindBestEpisodeLocalizationAsync(arcNumber, episodeNumber, languageCode,
-                CancellationToken.None);
+        var result = await _webRepository.FindBestLocalizationByEpisodeIdAsync(
+            episodeId, languageCode, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(expectedTitle, result.Title);
@@ -331,7 +347,7 @@ public class WebRepositoryTests
     [Fact]
     public async void ShouldFindSeriesLogoArt()
     {
-        var result = await _webRepository.FindAllSeriesLogoArtAsync(CancellationToken.None);
+        var result = await _webRepository.FindAllLogoArtBySeriesAsync(CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotEmpty(result);
@@ -340,29 +356,29 @@ public class WebRepositoryTests
     [Fact]
     public async void ShouldFindSeriesCoverArt()
     {
-        var result = await _webRepository.FindAllSeriesCoverArtAsync(CancellationToken.None);
+        var result = await _webRepository.FindAllCoverArtBySeriesAsync(CancellationToken.None);
 
         Assert.NotNull(result);
     }
 
     [Theory]
-    [InlineData(1, 4)]
-    [InlineData(2, 1)]
-    public async void ShouldFindAllArcCoverArt(int arcNumber, int expectedCoverArtCount)
+    [InlineData("clksypeix000008jw066ye7lo", 4)]
+    [InlineData("clksyq4q5000108jwgihd6jud", 1)]
+    public async void ShouldFindAllArcCoverArt(string arcId, int expectedCoverArtCount)
     {
-        var result = await _webRepository.FindAllArcCoverArtAsync(arcNumber, CancellationToken.None);
+        var result = await _webRepository.FindAllCoverArtByArcIdAsync(arcId, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(result.Count, expectedCoverArtCount);
     }
 
     [Theory]
-    [InlineData(1, 1, 3)]
-    [InlineData(1, 2, 1)]
-    [InlineData(2, 1, 2)]
-    public async void ShouldFindAllEpisodeCoverArt(int arcNumber, int episodeNumber, int expectedCoverArtCount)
+    [InlineData("clksyqwxl000208jw82wh3y0g", 3)]
+    [InlineData("clksys3c2000308jwa08325o7", 1)]
+    [InlineData("clksytlbt000508jw6r9x1jb1", 2)]
+    public async void ShouldFindAllEpisodeCoverArt(string episodeId, int expectedCoverArtCount)
     {
-        var result = await _webRepository.FindAllEpisodeCoverArtAsync(arcNumber, episodeNumber, CancellationToken.None);
+        var result = await _webRepository.FindAllCoverArtByEpisodeIdAsync(episodeId, CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.Equal(result.Count, expectedCoverArtCount);

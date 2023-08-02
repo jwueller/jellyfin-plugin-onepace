@@ -2,23 +2,23 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using JWueller.Jellyfin.OnePace.Model;
 using MediaBrowser.Controller.Providers;
 
 namespace JWueller.Jellyfin.OnePace;
 
 internal static class EpisodeIdentifier
 {
-    public static async Task<Model.IEpisode?> IdentifyAsync(
+    public static async Task<IEpisode?> IdentifyAsync(
         IRepository repository,
         ItemLookupInfo itemLookupInfo,
         CancellationToken cancellationToken)
     {
-        var episodeNumberInfo = itemLookupInfo.GetOnePaceEpisodeNumber();
-        if (episodeNumberInfo != null)
+        var episodeId = itemLookupInfo.GetOnePaceId();
+        if (episodeId != null)
         {
-            var (arcNumber, episodeNumber) = episodeNumberInfo.Value;
             var episodeInfo = await repository
-                .FindEpisodeByNumberAsync(arcNumber, episodeNumber, cancellationToken)
+                .FindEpisodeByIdAsync(episodeId, cancellationToken)
                 .ConfigureAwait(false);
             if (episodeInfo != null)
             {
@@ -35,6 +35,19 @@ internal static class EpisodeIdentifier
             // - "Romance Dawn 03"
             // - "3-5"
             var fileName = Path.GetFileNameWithoutExtension(itemLookupInfo.Path);
+
+            // match against CRC-32
+            foreach (var episode in episodes)
+            {
+                if (episode.Crc32 != null)
+                {
+                    var pattern = $@"\b{episode.Crc32.Value:X8}\b";
+                    if (Regex.IsMatch(fileName, pattern, RegexOptions.IgnoreCase))
+                    {
+                        return episode;
+                    }
+                }
+            }
 
             // match against chapter ranges
             foreach (var episode in episodes)

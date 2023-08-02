@@ -13,10 +13,10 @@ internal static class ArcIdentifier
         ItemLookupInfo itemLookupInfo,
         CancellationToken cancellationToken)
     {
-        var arcNumber = itemLookupInfo.GetOnePaceArcNumber();
-        if (arcNumber != null)
+        var arcId = itemLookupInfo.GetOnePaceId();
+        if (arcId != null)
         {
-            var arc = await repository.FindArcByNumberAsync(arcNumber.Value, cancellationToken).ConfigureAwait(false);
+            var arc = await repository.FindArcByIdAsync(arcId, cancellationToken).ConfigureAwait(false);
             if (arc != null)
             {
                 return arc;

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -48,41 +49,48 @@ public class EpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IH
     {
         var result = new MetadataResult<Episode>();
 
-        var match = await EpisodeIdentifier.IdentifyAsync(_repository, info, cancellationToken).ConfigureAwait(false);
-        if (match != null)
+        var episodeMatch = await EpisodeIdentifier.IdentifyAsync(_repository, info, cancellationToken).ConfigureAwait(false);
+        if (episodeMatch != null)
         {
-            result.HasMetadata = true;
-            result.Provider = Name;
-
-            result.Item = new Episode
+            var arc = await _repository.FindArcByIdAsync(episodeMatch.ArcId, cancellationToken).ConfigureAwait(false);
+            if (arc != null)
             {
-                IndexNumber = match.Number,
-                ParentIndexNumber = match.ArcNumber,
-                Name = match.InvariantTitle,
-                PremiereDate = match.ReleaseDate,
-                ProductionYear = match.ReleaseDate?.Year
-            };
+                result.HasMetadata = true;
+                result.Provider = Name;
 
-            result.Item.SetOnePaceEpisodeNumber(match.ArcNumber, match.Number);
+                result.Item = new Episode
+                {
+                    IndexNumber = episodeMatch.Number,
+                    ParentIndexNumber = arc.Number,
+                    Name = episodeMatch.InvariantTitle,
+                    PremiereDate = episodeMatch.ReleaseDate,
+                    ProductionYear = episodeMatch.ReleaseDate?.Year
+                };
 
-            var localization = await _repository
-                .FindBestEpisodeLocalizationAsync(
-                    match.ArcNumber,
-                    match.Number,
-                    info.MetadataLanguage ?? "en",
-                    cancellationToken)
-                .ConfigureAwait(false);
-            if (localization != null)
+                result.Item.SetOnePaceId(episodeMatch.Id);
+
+                var localization = await _repository
+                    .FindBestLocalizationByEpisodeIdAsync(
+                        episodeMatch.Id,
+                        info.MetadataLanguage ?? "en",
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                if (localization != null)
+                {
+                    result.Item.Name = localization.Title;
+                    result.Item.Overview = localization.Description;
+                }
+            }
+            else
             {
-                result.Item.Name = localization.Title;
-                result.Item.Overview = localization.Description;
+                _log.LogError("Could not find arc {ArcId}", episodeMatch.ArcId);
             }
         }
 
         _log.LogInformation(
             "Identified Episode {Info} --> {Match}",
-            System.Text.Json.JsonSerializer.Serialize(info),
-            System.Text.Json.JsonSerializer.Serialize(match));
+            JsonSerializer.Serialize(info),
+            JsonSerializer.Serialize(episodeMatch));
 
         return result;
     }

@@ -60,13 +60,13 @@ public class ArcImageProvider : IRemoteImageProvider, IHasOrder
     {
         var result = new List<RemoteImageInfo>();
 
-        var match = await ArcIdentifier
+        var arcMatch = await ArcIdentifier
             .IdentifyAsync(_repository, ((Season)item).GetLookupInfo(), cancellationToken)
             .ConfigureAwait(false);
-        if (match != null)
+        if (arcMatch != null)
         {
             var coverArts = await _repository
-                .FindAllArcCoverArtAsync(match.Number, cancellationToken)
+                .FindAllCoverArtByArcIdAsync(arcMatch.Id, cancellationToken)
                 .ConfigureAwait(false);
 
             result.AddRange(coverArts.Select(coverArt => new RemoteImageInfo

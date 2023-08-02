@@ -33,10 +33,10 @@ public class SeriesIdentifierTests
     }
 
     [Fact]
-    public async void ShouldIdentifySeriesByProviderId()
+    public async void ShouldIdentifySeriesByOnePaceId()
     {
         var itemLookupInfo = new ItemLookupInfo();
-        itemLookupInfo.SetIsOnePaceSeries(true);
+        itemLookupInfo.SetOnePaceId(Plugin.DummySeriesId);
 
         var series = await SeriesIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
 

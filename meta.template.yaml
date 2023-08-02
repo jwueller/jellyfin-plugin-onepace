@@ -9,4 +9,4 @@ description: >-
 category: "Metadata"
 owner: "jwueller"
 artifacts:
-- "JWueller.Jellyfin.OnePace.dll"
+  - "JWueller.Jellyfin.OnePace.dll"

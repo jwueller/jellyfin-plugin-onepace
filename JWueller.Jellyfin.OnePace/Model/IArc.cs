@@ -6,6 +6,11 @@ namespace JWueller.Jellyfin.OnePace.Model;
 public interface IArc
 {
     /// <summary>
+    /// Gets the CUID.
+    /// </summary>
+    string Id { get; }
+
+    /// <summary>
     /// Gets the number of the arc within the series.
     /// </summary>
     int Number { get; }

@@ -60,13 +60,13 @@ public class EpisodeImageProvider : IRemoteImageProvider, IHasOrder
     {
         var result = new List<RemoteImageInfo>();
 
-        var match = await EpisodeIdentifier
+        var episodeMatch = await EpisodeIdentifier
             .IdentifyAsync(_repository, ((Episode)item).GetLookupInfo(), cancellationToken)
             .ConfigureAwait(false);
-        if (match != null)
+        if (episodeMatch != null)
         {
             var coverArts = await _repository
-                .FindAllEpisodeCoverArtAsync(match.ArcNumber, match.Number, cancellationToken)
+                .FindAllCoverArtByEpisodeIdAsync(episodeMatch.Id, cancellationToken)
                 .ConfigureAwait(false);
 
             result.AddRange(coverArts.Select(coverArt => new RemoteImageInfo

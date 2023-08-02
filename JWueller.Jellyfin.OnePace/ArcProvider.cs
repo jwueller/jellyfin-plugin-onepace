@@ -45,24 +45,24 @@ public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrde
     {
         var result = new MetadataResult<Season>();
 
-        var match = await ArcIdentifier.IdentifyAsync(_repository, info, cancellationToken).ConfigureAwait(false);
-        if (match != null)
+        var arcMatch = await ArcIdentifier.IdentifyAsync(_repository, info, cancellationToken).ConfigureAwait(false);
+        if (arcMatch != null)
         {
             result.HasMetadata = true;
             result.Provider = Name;
 
             result.Item = new Season
             {
-                IndexNumber = match.Number,
-                Name = match.InvariantTitle,
-                PremiereDate = match.ReleaseDate,
-                ProductionYear = match.ReleaseDate?.Year,
+                IndexNumber = arcMatch.Number,
+                Name = arcMatch.InvariantTitle,
+                PremiereDate = arcMatch.ReleaseDate,
+                ProductionYear = arcMatch.ReleaseDate?.Year,
             };
 
-            result.Item.SetOnePaceArcNumber(match.Number);
+            result.Item.SetOnePaceId(arcMatch.Id);
 
             var localization = await _repository
-                .FindBestArcLocalizationAsync(match.Number, info.MetadataLanguage ?? "en", cancellationToken)
+                .FindBestLocalizationByArcIdAsync(arcMatch.Id, info.MetadataLanguage ?? "en", cancellationToken)
                 .ConfigureAwait(false);
             if (localization != null)
             {
@@ -74,7 +74,7 @@ public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrde
         _log.LogInformation(
             "Identified Arc {Info} --> {Match}",
             System.Text.Json.JsonSerializer.Serialize(info),
-            System.Text.Json.JsonSerializer.Serialize(match));
+            System.Text.Json.JsonSerializer.Serialize(arcMatch));
 
         return result;
     }
