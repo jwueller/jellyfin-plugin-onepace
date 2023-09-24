@@ -22,8 +22,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Jellyfin.Controller" Version="10.8.4" />
-    <PackageReference Include="Jellyfin.Model" Version="10.8.4" />
+    <PackageReference Include="Jellyfin.Controller" Version="10.8.11" />
+    <PackageReference Include="Jellyfin.Model" Version="10.8.11" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JWueller.Jellyfin.OnePace\JWueller.Jellyfin.OnePace.csproj" />
