@@ -9,8 +9,8 @@
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Jellyfin.Controller" Version="10.8.4"/>
-    <PackageReference Include="Jellyfin.Model" Version="10.8.4"/>
+    <PackageReference Include="Jellyfin.Controller" Version="10.8.11"/>
+    <PackageReference Include="Jellyfin.Model" Version="10.8.11"/>
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="$(AssemblyName).Tests"/>
