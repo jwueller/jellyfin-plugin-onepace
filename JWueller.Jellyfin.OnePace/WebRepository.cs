@@ -21,7 +21,7 @@ namespace JWueller.Jellyfin.OnePace;
 public class WebRepository : IRepository
 {
     private const string FallbackLanguageCode = "en";
-    private static readonly string FallbackApiLanguageCode = ToApiLanguageCode(FallbackLanguageCode);
+    private static readonly string _fallbackApiLanguageCode = ToApiLanguageCode(FallbackLanguageCode);
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IMemoryCache _memoryCache;
@@ -138,22 +138,26 @@ public class WebRepository : IRepository
         return string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static JsonElement? ChooseBestApiTranslation(
-        JsonElement.ArrayEnumerator apiCandidates,
-        string apiLanguageCode)
+    private static JsonElement? ChooseBestApiTranslation(JsonElement.ArrayEnumerator apiCandidates, string apiLanguageCode)
     {
-        foreach (var apiCandidate in apiCandidates)
+        while (true)
         {
-            if (LanguageCodesEqual(apiCandidate.GetProperty("language_code").GetNonNullString(), apiLanguageCode))
+            foreach (var apiCandidate in apiCandidates)
             {
-                return apiCandidate;
+                if (LanguageCodesEqual(apiCandidate.GetProperty("language_code").GetNonNullString(), apiLanguageCode))
+                {
+                    return apiCandidate;
+                }
             }
-        }
 
-        // Fall back to the next best thing.
-        return !LanguageCodesEqual(apiLanguageCode, FallbackApiLanguageCode)
-            ? ChooseBestApiTranslation(apiCandidates, FallbackApiLanguageCode)
-            : null;
+            // Do we have anything to fall back on?
+            if (LanguageCodesEqual(apiLanguageCode, _fallbackApiLanguageCode))
+            {
+                return null;
+            }
+
+            apiLanguageCode = _fallbackApiLanguageCode;
+        }
     }
 
     private async Task<JsonElement?> FindApiArcByIdAsync(string id, CancellationToken cancellationToken)
@@ -500,6 +504,7 @@ public class WebRepository : IRepository
         {
             Url = baseUrl + apiImage.GetProperty("src").GetNonNullString();
             Width = apiImage.GetProperty("width").CoerceNullableInt32();
+            Height = null; // doesn't exist in the API right now, but might in the future
         }
 
         public string Url { get; }
