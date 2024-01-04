@@ -27,7 +27,7 @@ internal static class EpisodeIdentifier
             }
         }
 
-        if (IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Path))
+        if (IdentifierUtil.OnePaceInvariantTitleRegex.IsMatch(itemLookupInfo.Path))
         {
             var episodes = await repository.FindAllEpisodesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -53,26 +53,18 @@ internal static class EpisodeIdentifier
             // match against chapter ranges
             foreach (var episode in episodes.OrderByDescending(episode => episode.MangaChapters?.Length ?? 0))
             {
-                if (!string.IsNullOrEmpty(episode.MangaChapters))
+                if (!string.IsNullOrEmpty(episode.MangaChapters) && IdentifierUtil.BuildTextRegex(episode.MangaChapters).IsMatch(fileName))
                 {
-                    var pattern = @"\b" + Regex.Escape(episode.MangaChapters) + @"\b";
-                    if (Regex.IsMatch(fileName, pattern, RegexOptions.IgnoreCase))
-                    {
-                        return episode;
-                    }
+                    return episode;
                 }
             }
 
             // match against invariant titles
             foreach (var episode in episodes.OrderByDescending(episode => episode.InvariantTitle.Length))
             {
-                if (!string.IsNullOrEmpty(episode.InvariantTitle))
+                if (!string.IsNullOrEmpty(episode.InvariantTitle) && IdentifierUtil.BuildTextRegex(episode.InvariantTitle).IsMatch(fileName))
                 {
-                    var pattern = @"\b" + Regex.Escape(episode.InvariantTitle) + @"\b";
-                    if (Regex.IsMatch(fileName, pattern, RegexOptions.IgnoreCase))
-                    {
-                        return episode;
-                    }
+                    return episode;
                 }
             }
         }

@@ -1,8 +1,10 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using JWueller.Jellyfin.OnePace.Model;
 using MediaBrowser.Controller.Providers;
 
 namespace JWueller.Jellyfin.OnePace;
@@ -24,7 +26,7 @@ internal static class ArcIdentifier
             }
         }
 
-        if (IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Path))
+        if (IdentifierUtil.OnePaceInvariantTitleRegex.IsMatch(itemLookupInfo.Path))
         {
             var arcs = await repository.FindAllArcsAsync(cancellationToken).ConfigureAwait(false);
 
@@ -38,26 +40,18 @@ internal static class ArcIdentifier
             // match against chapter ranges
             foreach (var arc in arcs.OrderByDescending(arc => arc.MangaChapters?.Length ?? 0))
             {
-                if (!string.IsNullOrEmpty(arc.MangaChapters))
+                if (!string.IsNullOrEmpty(arc.MangaChapters) && IdentifierUtil.BuildTextRegex(arc.MangaChapters).IsMatch(directoryName))
                 {
-                    var pattern = @"\b" + Regex.Escape(arc.MangaChapters) + @"\b";
-                    if (Regex.IsMatch(directoryName, pattern, RegexOptions.IgnoreCase))
-                    {
-                        return arc;
-                    }
+                    return arc;
                 }
             }
 
             // match against invariant titles
             foreach (var arc in arcs.OrderByDescending(arc => arc.InvariantTitle.Length))
             {
-                if (!string.IsNullOrEmpty(arc.InvariantTitle))
+                if (!string.IsNullOrEmpty(arc.InvariantTitle) && IdentifierUtil.BuildTextRegex(arc.InvariantTitle).IsMatch(directoryName))
                 {
-                    var pattern = @"\b" + Regex.Escape(arc.InvariantTitle) + @"\b";
-                    if (Regex.IsMatch(directoryName, pattern, RegexOptions.IgnoreCase))
-                    {
-                        return arc;
-                    }
+                    return arc;
                 }
             }
 

@@ -12,8 +12,8 @@ internal static class SeriesIdentifier
         CancellationToken cancellationToken)
     {
         if (itemLookupInfo.GetOnePaceId() == Plugin.DummySeriesId
-            || IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Name)
-            || IdentifierUtil.MatchesOnePaceInvariantTitle(itemLookupInfo.Path))
+            || (itemLookupInfo.Name != null && IdentifierUtil.OnePaceInvariantTitleRegex.IsMatch(itemLookupInfo.Name))
+            || (itemLookupInfo.Path != null && IdentifierUtil.OnePaceInvariantTitleRegex.IsMatch(itemLookupInfo.Path)))
         {
             return await repository.FindSeriesAsync(cancellationToken).ConfigureAwait(false);
         }

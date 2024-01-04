@@ -55,6 +55,15 @@ public class ArcIdentifierTests
 
             new TestArc
             {
+                Id = "clqgslsp8006pnv5c08glvvjm",
+                Rank = 10,
+                InvariantTitle = "Whisky Peak",
+                MangaChapters = null,
+                ReleaseDate = null
+            },
+
+            new TestArc
+            {
                 Id = "clqgslt5n00bwnv5cj0e4wb0i",
                 Rank = 19,
                 InvariantTitle = "Enies Lobby",
@@ -141,5 +150,22 @@ public class ArcIdentifierTests
 
         Assert.NotNull(arc);
         Assert.Equal(expectedInvariantTitle, arc.InvariantTitle);
+    }
+
+    /// <summary>
+    /// It's 'Whisky Peak', not 'Whiskey Peak', but its such a common typo that we need to handle it.
+    /// </summary>
+    [Fact]
+    public async void ShouldIdentifyWhiskyPeakDespiteTypo()
+    {
+        var itemLookupInfo = new ItemLookupInfo
+        {
+            Path = "/path/to/One Pace/Whiskey Peak"
+        };
+
+        var arc = await ArcIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
+
+        Assert.NotNull(arc);
+        Assert.Equal("Whisky Peak", arc.InvariantTitle);
     }
 }

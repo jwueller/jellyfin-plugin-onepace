@@ -76,6 +76,17 @@ public class EpisodeIdentifierTests
 
             new TestEpisode
             {
+                Id = "clqgsm6a403yjnv5cw3owwctw",
+                Rank = 1,
+                ArcId = "clqgslsp8006pnv5c08glvvjm",
+                InvariantTitle = "Whisky Peak 01",
+                MangaChapters = null,
+                ReleaseDate = null,
+                Crc32 = null
+            },
+
+            new TestEpisode
+            {
                 Id = "clqgsm60g03vvnv5cvf2afpq8",
                 Rank = 1,
                 ArcId = "clqgslt5n00bwnv5cj0e4wb0i",
@@ -172,5 +183,22 @@ public class EpisodeIdentifierTests
 
         Assert.NotNull(episode);
         Assert.Equal(expectedInvariantTitle, episode.InvariantTitle);
+    }
+
+    /// <summary>
+    /// It's 'Whisky Peak', not 'Whiskey Peak', but its such a common typo that we need to handle it.
+    /// </summary>
+    [Fact]
+    public async void ShouldIdentifyWhiskyPeakDespiteTypo()
+    {
+        var itemLookupInfo = new ItemLookupInfo
+        {
+            Path = "/path/to/One Pace/Whiskey Peak 01.mkv"
+        };
+
+        var episode = await EpisodeIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
+
+        Assert.NotNull(episode);
+        Assert.Equal("Whisky Peak 01", episode.InvariantTitle);
     }
 }
