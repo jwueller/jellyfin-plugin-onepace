@@ -33,7 +33,7 @@ public class SeriesIdentifierTests
     }
 
     [Fact]
-    public async void ShouldIdentifySeriesByOnePaceId()
+    public async void ShouldIdentifySeriesByProviderId()
     {
         var itemLookupInfo = new ItemLookupInfo();
         itemLookupInfo.SetOnePaceId(Plugin.DummySeriesId);

@@ -273,7 +273,7 @@ public class WebRepositoryTests
     [Theory]
     [InlineData("clksypeix000008jw066ye7lo", "Romance Dawn")]
     [InlineData("clksyq4q5000108jwgihd6jud", "Orange Town")]
-    public async void ShouldFindArcByNumber(string arcId, string expectedInvariantTitle)
+    public async void ShouldFindArcById(string arcId, string expectedInvariantTitle)
     {
         var result = await _webRepository.FindArcByIdAsync(arcId, CancellationToken.None);
 
@@ -286,7 +286,7 @@ public class WebRepositoryTests
     [InlineData("clksys3c2000308jwa08325o7", "Romance Dawn 02")]
     [InlineData("clksysvim000408jw6anzden8", "Romance Dawn 03")]
     [InlineData("clksytlbt000508jw6r9x1jb1", "Orange Town 01")]
-    public async void ShouldFindEpisodeByNumber(string episodeId, string expectedInvariantTitle)
+    public async void ShouldFindEpisodeById(string episodeId, string expectedInvariantTitle)
     {
         var result = await _webRepository.FindEpisodeByIdAsync(episodeId, CancellationToken.None);
 

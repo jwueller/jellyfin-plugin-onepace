@@ -20,9 +20,9 @@ public class ProviderIdsExtensionsTests
     [InlineData("clksp2ju3000008kwfdu141iy")]
     public void ShouldExtractOnePaceId(string providerId)
     {
-        var itemLookupInfo = new ItemLookupInfo()
+        var itemLookupInfo = new ItemLookupInfo
         {
-            ProviderIds = { [Plugin.ProviderName] = providerId },
+            ProviderIds = { [Plugin.ProviderName] = providerId }
         };
 
         Assert.Equal(providerId, itemLookupInfo.GetOnePaceId());
@@ -33,9 +33,9 @@ public class ProviderIdsExtensionsTests
     [InlineData("A2E40")]
     public void ShouldDiscardLegacyOnePaceId(string providerId)
     {
-        var itemLookupInfo = new ItemLookupInfo()
+        var itemLookupInfo = new ItemLookupInfo
         {
-            ProviderIds = { [Plugin.ProviderName] = providerId },
+            ProviderIds = { [Plugin.ProviderName] = providerId }
         };
 
         Assert.Null(itemLookupInfo.GetOnePaceId());
