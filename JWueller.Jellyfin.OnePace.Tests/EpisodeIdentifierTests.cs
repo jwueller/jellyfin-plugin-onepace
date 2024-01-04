@@ -73,6 +73,28 @@ public class EpisodeIdentifierTests
                 ReleaseDate = null,
                 Crc32 = null,
             },
+
+            new TestEpisode
+            {
+                Id = "clqgsm60g03vvnv5cvf2afpq8",
+                Rank = 1,
+                ArcId = "clqgslt5n00bwnv5cj0e4wb0i",
+                InvariantTitle = "Enies Lobby 01",
+                MangaChapters = null,
+                ReleaseDate = null,
+                Crc32 = null,
+            },
+
+            new TestEpisode
+            {
+                Id = "clqgslvmk011bnv5cvl0khvob",
+                Rank = 1,
+                ArcId = "clqgslt7v00cjnv5cg8eumgzc",
+                InvariantTitle = "Post-Enies Lobby 01",
+                MangaChapters = null,
+                ReleaseDate = null,
+                Crc32 = null,
+            },
         };
 
         var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
@@ -120,6 +142,26 @@ public class EpisodeIdentifierTests
     [InlineData("/path/to/One Pace/D767799C.mkv", "Romance Dawn 01")] // uppercase CRC-32 only
     [InlineData("/path/to/One Pace/c7ca5080.mkv", "Orange Town 01")] // lowercase CRC-32 only
     public async void ShouldIdentifyEpisodeByPath(string path, string expectedInvariantTitle)
+    {
+        var itemLookupInfo = new ItemLookupInfo
+        {
+            Path = path,
+        };
+
+        var episode = await EpisodeIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
+
+        Assert.NotNull(episode);
+        Assert.Equal(expectedInvariantTitle, episode.InvariantTitle);
+    }
+
+    /// <summary>
+    /// Regression test for titles that are substrings of other titles.
+    /// </summary>
+    /// <see href="https://github.com/jwueller/jellyfin-plugin-onepace/issues/34"/>
+    [Theory]
+    [InlineData("/path/to/One Pace/Enies Lobby 01.mkv", "Enies Lobby 01")]
+    [InlineData("/path/to/One Pace/Post-Enies Lobby 01.mkv", "Post-Enies Lobby 01")]
+    public async void ShouldPreferLongerTitles(string path, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo
         {

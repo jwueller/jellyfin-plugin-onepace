@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,7 +51,7 @@ internal static class EpisodeIdentifier
             }
 
             // match against chapter ranges
-            foreach (var episode in episodes)
+            foreach (var episode in episodes.OrderByDescending(episode => episode.MangaChapters?.Length ?? 0))
             {
                 if (!string.IsNullOrEmpty(episode.MangaChapters))
                 {
@@ -63,7 +64,7 @@ internal static class EpisodeIdentifier
             }
 
             // match against invariant titles
-            foreach (var episode in episodes)
+            foreach (var episode in episodes.OrderByDescending(episode => episode.InvariantTitle.Length))
             {
                 if (!string.IsNullOrEmpty(episode.InvariantTitle))
                 {

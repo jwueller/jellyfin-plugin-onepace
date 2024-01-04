@@ -297,6 +297,8 @@ public class WebRepositoryTests
     /// <summary>
     /// Regression test for ArcId not being populated correctly.
     /// </summary>
+    /// <see href="https://github.com/jwueller/jellyfin-plugin-onepace/issues/12"/>
+    /// <see href="https://github.com/jwueller/jellyfin-plugin-onepace/issues/28"/>
     [Fact]
     public async void ShouldFindEpisodeWithMatchingArcById()
     {

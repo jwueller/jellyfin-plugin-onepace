@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,7 +36,7 @@ internal static class ArcIdentifier
             var directoryName = Path.GetFileName(itemLookupInfo.Path);
 
             // match against chapter ranges
-            foreach (var arc in arcs)
+            foreach (var arc in arcs.OrderByDescending(arc => arc.MangaChapters?.Length ?? 0))
             {
                 if (!string.IsNullOrEmpty(arc.MangaChapters))
                 {
@@ -48,7 +49,7 @@ internal static class ArcIdentifier
             }
 
             // match against invariant titles
-            foreach (var arc in arcs)
+            foreach (var arc in arcs.OrderByDescending(arc => arc.InvariantTitle.Length))
             {
                 if (!string.IsNullOrEmpty(arc.InvariantTitle))
                 {

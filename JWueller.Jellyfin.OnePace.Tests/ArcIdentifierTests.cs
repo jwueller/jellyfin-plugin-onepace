@@ -52,6 +52,24 @@ public class ArcIdentifierTests
                 MangaChapters = null,
                 ReleaseDate = null,
             },
+
+            new TestArc
+            {
+                Id = "clqgslt5n00bwnv5cj0e4wb0i",
+                Rank = 19,
+                InvariantTitle = "Enies Lobby",
+                MangaChapters = null,
+                ReleaseDate = null,
+            },
+
+            new TestArc
+            {
+                Id = "clqgslt7v00cjnv5cg8eumgzc",
+                Rank = 20,
+                InvariantTitle = "Post-Enies Lobby",
+                MangaChapters = null,
+                ReleaseDate = null,
+            },
         };
 
         var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
@@ -93,6 +111,26 @@ public class ArcIdentifierTests
     [InlineData("/path/to/One Pace/[One Pace][8-21] Orange Town [1080p]", "Orange Town")] // release name
     [InlineData("/path/to/One Pace/[One Pace][23-41] Syrup Village [480p]", "Syrup Village")] // release name
     public async void ShouldIdentifyArcByPath(string path, string expectedInvariantTitle)
+    {
+        var itemLookupInfo = new ItemLookupInfo
+        {
+            Path = path,
+        };
+
+        var arc = await ArcIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
+
+        Assert.NotNull(arc);
+        Assert.Equal(expectedInvariantTitle, arc.InvariantTitle);
+    }
+
+    /// <summary>
+    /// Regression test for titles that are substrings of other titles.
+    /// </summary>
+    /// <see href="https://github.com/jwueller/jellyfin-plugin-onepace/issues/34"/>
+    [Theory]
+    [InlineData("/path/to/One Pace/Enies Lobby", "Enies Lobby")]
+    [InlineData("/path/to/One Pace/Post-Enies Lobby", "Post-Enies Lobby")]
+    public async void ShouldPreferLongerTitles(string path, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo
         {
