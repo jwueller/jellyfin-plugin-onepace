@@ -294,6 +294,19 @@ public class WebRepositoryTests
         Assert.Equal(expectedInvariantTitle, result.InvariantTitle);
     }
 
+    /// <summary>
+    /// Regression test for ArcId not being populated correctly.
+    /// </summary>
+    [Fact]
+    public async void ShouldFindEpisodeWithMatchingArcById()
+    {
+        var result = await _webRepository.FindEpisodeByIdAsync("clksyqwxl000208jw82wh3y0g", CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal("clksyqwxl000208jw82wh3y0g", result.Id);
+        Assert.Equal("clksypeix000008jw066ye7lo", result.ArcId);
+    }
+
     [Theory]
     [InlineData("en", "One Pace en", "English description")]
     [InlineData("de", "One Pace de", "Deutsche Beschreibung")]
