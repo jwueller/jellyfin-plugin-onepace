@@ -161,7 +161,7 @@ public class WebRepository : IRepository
         try
         {
             var apiMetadata = await FetchMetadataAsync(cancellationToken).ConfigureAwait(false);
-            return apiMetadata?.GetProperty("arcs").EnumerateArray().FirstOrDefault(apiArc =>
+            return apiMetadata?.GetProperty("arcs").EnumerateArray().FirstOrNull(apiArc =>
                 apiArc.GetProperty("id").GetNonNullString() == id);
         }
         catch (HttpRequestException)
@@ -180,7 +180,7 @@ public class WebRepository : IRepository
             return apiMetadata?.GetProperty("arcs").EnumerateArray()
                 .SelectMany(arc => arc.GetProperty("episodes").EnumerateArray()
                     .Where(episode => episode.GetProperty("id").GetNonNullString() == id))
-                .FirstOrDefault();
+                .FirstOrNull();
         }
         catch (HttpRequestException)
         {
