@@ -56,7 +56,7 @@ public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrde
                 IndexNumber = arcMatch.Rank,
                 Name = arcMatch.InvariantTitle,
                 PremiereDate = arcMatch.ReleaseDate,
-                ProductionYear = arcMatch.ReleaseDate?.Year,
+                ProductionYear = arcMatch.ReleaseDate?.Year
             };
 
             result.Item.SetOnePaceId(arcMatch.Id);
@@ -99,7 +99,7 @@ public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrde
                 ProductionYear = season.ProductionYear,
                 Overview = season.Overview,
                 ProviderIds = season.ProviderIds,
-                SearchProviderName = Name,
+                SearchProviderName = Name
             });
         }
 

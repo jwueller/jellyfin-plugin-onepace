@@ -21,7 +21,7 @@ public class SeriesIdentifierTests
         var series = new TestSeries
         {
             InvariantTitle = "One Pace",
-            OriginalTitle = "One Piece",
+            OriginalTitle = "One Piece"
         };
 
         var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
@@ -51,7 +51,7 @@ public class SeriesIdentifierTests
     {
         var itemLookupInfo = new ItemLookupInfo
         {
-            Path = path,
+            Path = path
         };
 
         var series = await SeriesIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
@@ -67,7 +67,7 @@ public class SeriesIdentifierTests
     {
         var itemLookupInfo = new ItemLookupInfo
         {
-            Name = name,
+            Name = name
         };
 
         var series = await SeriesIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);

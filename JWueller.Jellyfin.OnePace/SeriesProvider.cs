@@ -55,7 +55,7 @@ public class SeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasO
             result.Item = new Series
             {
                 Name = seriesMatch.InvariantTitle,
-                OriginalTitle = seriesMatch.OriginalTitle,
+                OriginalTitle = seriesMatch.OriginalTitle
             };
 
             result.Item.SetOnePaceId(Plugin.DummySeriesId);
@@ -97,7 +97,7 @@ public class SeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasO
                 Name = series.Name,
                 Overview = series.Overview,
                 ProviderIds = series.ProviderIds,
-                SearchProviderName = Name,
+                SearchProviderName = Name
             });
         }
 

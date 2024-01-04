@@ -74,7 +74,7 @@ public class EpisodeImageProvider : IRemoteImageProvider, IHasOrder
                 Type = ImageType.Primary,
                 Url = coverArt.Url,
                 Width = coverArt.Width,
-                ProviderName = Name,
+                ProviderName = Name
             }));
         }
 

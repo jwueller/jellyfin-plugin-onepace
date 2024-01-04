@@ -116,7 +116,7 @@ public class EpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IH
                 ProductionYear = episode.ProductionYear,
                 Overview = episode.Overview,
                 ProviderIds = episode.ProviderIds,
-                SearchProviderName = Name,
+                SearchProviderName = Name
             });
         }
 

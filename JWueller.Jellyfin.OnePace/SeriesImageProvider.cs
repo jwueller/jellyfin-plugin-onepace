@@ -71,7 +71,7 @@ public class SeriesImageProvider : IRemoteImageProvider, IHasOrder
                 Type = ImageType.Logo,
                 Url = logoArt.Url,
                 Width = logoArt.Width,
-                ProviderName = Name,
+                ProviderName = Name
             }));
 
             var coverArts = await _repository.FindAllCoverArtBySeriesAsync(cancellationToken).ConfigureAwait(false);
@@ -80,7 +80,7 @@ public class SeriesImageProvider : IRemoteImageProvider, IHasOrder
                 Type = ImageType.Primary,
                 Url = coverArt.Url,
                 Width = coverArt.Width,
-                ProviderName = Name,
+                ProviderName = Name
             }));
         }
 

@@ -218,14 +218,14 @@ public class WebRepositoryTests
                         return Task.FromResult(new HttpResponseMessage
                         {
                             StatusCode = HttpStatusCode.OK,
-                            Content = new StringContent(MetadataResponse),
+                            Content = new StringContent(MetadataResponse)
                         });
                     }
                 }
 
                 return Task.FromResult(new HttpResponseMessage
                 {
-                    StatusCode = HttpStatusCode.NotFound,
+                    StatusCode = HttpStatusCode.NotFound
                 });
             });
 

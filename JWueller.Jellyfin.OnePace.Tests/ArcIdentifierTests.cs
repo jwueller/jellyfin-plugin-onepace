@@ -32,7 +32,7 @@ public class ArcIdentifierTests
                 Rank = 1,
                 InvariantTitle = "Romance Dawn",
                 MangaChapters = "1-7",
-                ReleaseDate = null,
+                ReleaseDate = null
             },
 
             new TestArc
@@ -41,7 +41,7 @@ public class ArcIdentifierTests
                 Rank = 2,
                 InvariantTitle = "Orange Town",
                 MangaChapters = "8-21",
-                ReleaseDate = null,
+                ReleaseDate = null
             },
 
             new TestArc
@@ -50,7 +50,7 @@ public class ArcIdentifierTests
                 Rank = 3,
                 InvariantTitle = "Syrup Village",
                 MangaChapters = null,
-                ReleaseDate = null,
+                ReleaseDate = null
             },
 
             new TestArc
@@ -59,7 +59,7 @@ public class ArcIdentifierTests
                 Rank = 19,
                 InvariantTitle = "Enies Lobby",
                 MangaChapters = null,
-                ReleaseDate = null,
+                ReleaseDate = null
             },
 
             new TestArc
@@ -68,8 +68,8 @@ public class ArcIdentifierTests
                 Rank = 20,
                 InvariantTitle = "Post-Enies Lobby",
                 MangaChapters = null,
-                ReleaseDate = null,
-            },
+                ReleaseDate = null
+            }
         };
 
         var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
@@ -114,7 +114,7 @@ public class ArcIdentifierTests
     {
         var itemLookupInfo = new ItemLookupInfo
         {
-            Path = path,
+            Path = path
         };
 
         var arc = await ArcIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
@@ -134,7 +134,7 @@ public class ArcIdentifierTests
     {
         var itemLookupInfo = new ItemLookupInfo
         {
-            Path = path,
+            Path = path
         };
 
         var arc = await ArcIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);

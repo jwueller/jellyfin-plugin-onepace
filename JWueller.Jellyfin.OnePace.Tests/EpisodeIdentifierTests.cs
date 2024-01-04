@@ -38,7 +38,7 @@ public class EpisodeIdentifierTests
                 InvariantTitle = "Romance Dawn 01",
                 MangaChapters = "1",
                 ReleaseDate = null,
-                Crc32 = 0xD767799C,
+                Crc32 = 0xD767799C
             },
 
             new TestEpisode
@@ -49,7 +49,7 @@ public class EpisodeIdentifierTests
                 InvariantTitle = "Romance Dawn 02",
                 MangaChapters = "2",
                 ReleaseDate = null,
-                Crc32 = 0x04A43CEF,
+                Crc32 = 0x04A43CEF
             },
 
             new TestEpisode
@@ -60,7 +60,7 @@ public class EpisodeIdentifierTests
                 InvariantTitle = "Orange Town 01",
                 MangaChapters = "8-11",
                 ReleaseDate = null,
-                Crc32 = 0xC7CA5080,
+                Crc32 = 0xC7CA5080
             },
 
             new TestEpisode
@@ -71,7 +71,7 @@ public class EpisodeIdentifierTests
                 InvariantTitle = "Orange Town 02",
                 MangaChapters = null,
                 ReleaseDate = null,
-                Crc32 = null,
+                Crc32 = null
             },
 
             new TestEpisode
@@ -82,7 +82,7 @@ public class EpisodeIdentifierTests
                 InvariantTitle = "Enies Lobby 01",
                 MangaChapters = null,
                 ReleaseDate = null,
-                Crc32 = null,
+                Crc32 = null
             },
 
             new TestEpisode
@@ -93,8 +93,8 @@ public class EpisodeIdentifierTests
                 InvariantTitle = "Post-Enies Lobby 01",
                 MangaChapters = null,
                 ReleaseDate = null,
-                Crc32 = null,
-            },
+                Crc32 = null
+            }
         };
 
         var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
@@ -145,7 +145,7 @@ public class EpisodeIdentifierTests
     {
         var itemLookupInfo = new ItemLookupInfo
         {
-            Path = path,
+            Path = path
         };
 
         var episode = await EpisodeIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
@@ -165,7 +165,7 @@ public class EpisodeIdentifierTests
     {
         var itemLookupInfo = new ItemLookupInfo
         {
-            Path = path,
+            Path = path
         };
 
         var episode = await EpisodeIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
