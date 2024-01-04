@@ -13,7 +13,7 @@ public class ArcIdentifierTests
     {
         public string Id { get; init; } = null!;
 
-        public int Number { get; init; }
+        public int Rank { get; init; }
 
         public string InvariantTitle { get; init; } = null!;
 
@@ -29,7 +29,7 @@ public class ArcIdentifierTests
             new TestArc
             {
                 Id = "clkso3n3l000008l751pk86u4",
-                Number = 1,
+                Rank = 1,
                 InvariantTitle = "Romance Dawn",
                 MangaChapters = "1-7",
                 ReleaseDate = null,
@@ -38,7 +38,7 @@ public class ArcIdentifierTests
             new TestArc
             {
                 Id = "clkso3uwi000108l724rj9vc0",
-                Number = 2,
+                Rank = 2,
                 InvariantTitle = "Orange Town",
                 MangaChapters = "8-21",
                 ReleaseDate = null,
@@ -47,7 +47,7 @@ public class ArcIdentifierTests
             new TestArc
             {
                 Id = "clkso3zi6000208l7bhq7dtn6",
-                Number = 3,
+                Rank = 3,
                 InvariantTitle = "Syrup Village",
                 MangaChapters = null,
                 ReleaseDate = null,
@@ -88,8 +88,8 @@ public class ArcIdentifierTests
     [InlineData("/path/to/One Pace/[One Pace][1-7] Romance Dawn [1080p]", "Romance Dawn")] // release name
     [InlineData("/path/to/One Pace/1-7", "Romance Dawn")] // chapter range
     [InlineData("/path/to/One Pace/Romance Dawn", "Romance Dawn")] // title
-    [InlineData("/path/to/One Pace/1", "Romance Dawn")] // number
-    [InlineData("/path/to/One Pace/001", "Romance Dawn")] // number (padded)
+    [InlineData("/path/to/One Pace/1", "Romance Dawn")] // rank
+    [InlineData("/path/to/One Pace/001", "Romance Dawn")] // rank (padded)
     [InlineData("/path/to/One Pace/[One Pace][8-21] Orange Town [1080p]", "Orange Town")] // release name
     [InlineData("/path/to/One Pace/[One Pace][23-41] Syrup Village [480p]", "Syrup Village")] // release name
     public async void ShouldIdentifyArcByPath(string path, string expectedInvariantTitle)

@@ -13,7 +13,7 @@ public class EpisodeIdentifierTests
     {
         public string Id { get; init; } = null!;
 
-        public int Number { get; init; }
+        public int Rank { get; init; }
 
         public string ArcId { get; init; } = null!;
 
@@ -33,7 +33,7 @@ public class EpisodeIdentifierTests
             new TestEpisode
             {
                 Id = "clkso9n2a000008jkdjxn6acj",
-                Number = 1,
+                Rank = 1,
                 ArcId = "clksod80d000408jkbahl6yqa",
                 InvariantTitle = "Romance Dawn 01",
                 MangaChapters = "1",
@@ -44,7 +44,7 @@ public class EpisodeIdentifierTests
             new TestEpisode
             {
                 Id = "clkso9t8u000108jk5lbu2409",
-                Number = 2,
+                Rank = 2,
                 ArcId = "clksodbar000508jk9wkz0y2n",
                 InvariantTitle = "Romance Dawn 02",
                 MangaChapters = "2",
@@ -55,7 +55,7 @@ public class EpisodeIdentifierTests
             new TestEpisode
             {
                 Id = "clkso9z6n000208jk069u63ih",
-                Number = 1,
+                Rank = 1,
                 ArcId = "clksode6a000608jkfm0m77m3",
                 InvariantTitle = "Orange Town 01",
                 MangaChapters = "8-11",
@@ -66,7 +66,7 @@ public class EpisodeIdentifierTests
             new TestEpisode
             {
                 Id = "clksoa57k000308jkb3cu73n8",
-                Number = 2,
+                Rank = 2,
                 ArcId = "clksodhex000708jk7bak1tml",
                 InvariantTitle = "Orange Town 02",
                 MangaChapters = null,

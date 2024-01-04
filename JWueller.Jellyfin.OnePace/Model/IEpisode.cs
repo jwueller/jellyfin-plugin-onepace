@@ -18,9 +18,9 @@ public interface IEpisode
     string ArcId { get; }
 
     /// <summary>
-    /// Gets the number of the episode within the arc.
+    /// Gets the rank (i.e. order) of the episode within the arc.
     /// </summary>
-    int Number { get; }
+    int Rank { get; }
 
     /// <summary>
     /// Gets the invariant title of the episode, e.g., "Romance Dawn 01".

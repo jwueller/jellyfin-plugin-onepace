@@ -60,12 +60,12 @@ internal static class ArcIdentifier
                 }
             }
 
-            // match against arc numbers
+            // match against arc ranks
             foreach (var arc in arcs)
             {
                 var pattern =
                     @"\b0*" +
-                    Regex.Escape(arc.Number.ToString(System.Globalization.CultureInfo.InvariantCulture)) +
+                    Regex.Escape(arc.Rank.ToString(System.Globalization.CultureInfo.InvariantCulture)) +
                     @"\b";
 
                 if (Regex.IsMatch(directoryName, pattern, RegexOptions.IgnoreCase))

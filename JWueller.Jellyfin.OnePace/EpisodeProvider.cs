@@ -60,8 +60,8 @@ public class EpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IH
 
                 result.Item = new Episode
                 {
-                    IndexNumber = episodeMatch.Number,
-                    ParentIndexNumber = arc.Number,
+                    IndexNumber = episodeMatch.Rank,
+                    ParentIndexNumber = arc.Rank,
                     Name = episodeMatch.InvariantTitle,
                     PremiereDate = episodeMatch.ReleaseDate,
                     ProductionYear = episodeMatch.ReleaseDate?.Year

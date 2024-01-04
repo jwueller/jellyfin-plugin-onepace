@@ -11,9 +11,9 @@ public interface IArc
     string Id { get; }
 
     /// <summary>
-    /// Gets the number of the arc within the series.
+    /// Gets the rank (i.e. order) of the arc within the series.
     /// </summary>
-    int Number { get; }
+    int Rank { get; }
 
     /// <summary>
     /// Gets the invariant title of the arc, e.g., "Romance Dawn".

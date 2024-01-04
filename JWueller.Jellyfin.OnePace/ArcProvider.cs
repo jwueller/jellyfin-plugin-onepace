@@ -53,7 +53,7 @@ public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrde
 
             result.Item = new Season
             {
-                IndexNumber = arcMatch.Number,
+                IndexNumber = arcMatch.Rank,
                 Name = arcMatch.InvariantTitle,
                 PremiereDate = arcMatch.ReleaseDate,
                 ProductionYear = arcMatch.ReleaseDate?.Year,

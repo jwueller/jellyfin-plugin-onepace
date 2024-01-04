@@ -443,7 +443,7 @@ public class WebRepository : IRepository
         public RepositoryArc(JsonElement apiArc)
         {
             Id = apiArc.GetProperty("id").GetNonNullString();
-            Number = apiArc.GetProperty("part").GetInt32();
+            Rank = apiArc.GetProperty("part").GetInt32();
             InvariantTitle = apiArc.GetProperty("invariant_title").GetNonNullString();
             MangaChapters = apiArc.GetProperty("manga_chapters").GetString();
             ReleaseDate = ParseReleaseDate(apiArc.GetProperty("released_at"));
@@ -451,7 +451,7 @@ public class WebRepository : IRepository
 
         public string Id { get; }
 
-        public int Number { get; }
+        public int Rank { get; }
 
         public string InvariantTitle { get; }
 
@@ -465,7 +465,7 @@ public class WebRepository : IRepository
         public RepositoryEpisode(string arcId, JsonElement apiEpisode)
         {
             Id = apiEpisode.GetProperty("id").GetNonNullString();
-            Number = apiEpisode.GetProperty("part").GetInt32();
+            Rank = apiEpisode.GetProperty("part").GetInt32();
             ArcId = arcId;
             InvariantTitle = apiEpisode.GetProperty("invariant_title").GetNonNullString();
             MangaChapters = apiEpisode.GetProperty("manga_chapters").GetString();
@@ -480,7 +480,7 @@ public class WebRepository : IRepository
 
         public string Id { get; }
 
-        public int Number { get; }
+        public int Rank { get; }
 
         public string ArcId { get; }
 
