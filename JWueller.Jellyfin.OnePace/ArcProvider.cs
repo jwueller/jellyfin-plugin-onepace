@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -73,8 +74,8 @@ public class ArcProvider : IRemoteMetadataProvider<Season, SeasonInfo>, IHasOrde
 
         _log.LogInformation(
             "Identified Arc {Info} --> {Match}",
-            System.Text.Json.JsonSerializer.Serialize(info),
-            System.Text.Json.JsonSerializer.Serialize(arcMatch));
+            JsonSerializer.Serialize(info),
+            JsonSerializer.Serialize(arcMatch));
 
         return result;
     }

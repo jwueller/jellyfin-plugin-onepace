@@ -22,7 +22,10 @@ public class ProviderIdsExtensionsTests
     {
         var itemLookupInfo = new ItemLookupInfo
         {
-            ProviderIds = { [Plugin.ProviderName] = providerId }
+            ProviderIds =
+            {
+                [Plugin.ProviderName] = providerId
+            }
         };
 
         Assert.Equal(providerId, itemLookupInfo.GetOnePaceId());
@@ -35,7 +38,10 @@ public class ProviderIdsExtensionsTests
     {
         var itemLookupInfo = new ItemLookupInfo
         {
-            ProviderIds = { [Plugin.ProviderName] = providerId }
+            ProviderIds =
+            {
+                [Plugin.ProviderName] = providerId
+            }
         };
 
         Assert.Null(itemLookupInfo.GetOnePaceId());

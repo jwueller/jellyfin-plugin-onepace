@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -46,7 +47,8 @@ public class SeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasO
     {
         var result = new MetadataResult<Series>();
 
-        var seriesMatch = await SeriesIdentifier.IdentifyAsync(_repository, info, cancellationToken).ConfigureAwait(false);
+        var seriesMatch = await SeriesIdentifier.IdentifyAsync(_repository, info, cancellationToken)
+            .ConfigureAwait(false);
         if (seriesMatch != null)
         {
             result.HasMetadata = true;
@@ -74,8 +76,8 @@ public class SeriesProvider : IRemoteMetadataProvider<Series, SeriesInfo>, IHasO
 
         _log.LogInformation(
             "Identified Series {Info} --> {Match}",
-            System.Text.Json.JsonSerializer.Serialize(info),
-            System.Text.Json.JsonSerializer.Serialize(seriesMatch));
+            JsonSerializer.Serialize(info),
+            JsonSerializer.Serialize(seriesMatch));
 
         return result;
     }

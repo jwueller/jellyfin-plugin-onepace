@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
@@ -81,8 +82,8 @@ public class ArcImageProvider : IRemoteImageProvider, IHasOrder
         _log.LogInformation(
             "Found {Count} arc image(s) for {Item} --> {Result}",
             result.Count,
-            System.Text.Json.JsonSerializer.Serialize(item),
-            System.Text.Json.JsonSerializer.Serialize(result));
+            JsonSerializer.Serialize(item),
+            JsonSerializer.Serialize(result));
 
         return result;
     }

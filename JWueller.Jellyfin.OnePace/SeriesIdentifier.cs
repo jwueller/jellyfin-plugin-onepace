@@ -1,12 +1,13 @@
 using System.Threading;
 using System.Threading.Tasks;
+using JWueller.Jellyfin.OnePace.Model;
 using MediaBrowser.Controller.Providers;
 
 namespace JWueller.Jellyfin.OnePace;
 
 internal static class SeriesIdentifier
 {
-    public static async Task<Model.ISeries?> IdentifyAsync(
+    public static async Task<ISeries?> IdentifyAsync(
         IRepository repository,
         ItemLookupInfo itemLookupInfo,
         CancellationToken cancellationToken)

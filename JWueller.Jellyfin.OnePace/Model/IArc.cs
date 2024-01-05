@@ -1,3 +1,5 @@
+using System;
+
 namespace JWueller.Jellyfin.OnePace.Model;
 
 /// <summary>
@@ -28,5 +30,5 @@ public interface IArc
     /// <summary>
     /// Gets the release date of the arc. Null if release date is unknown or the arc is unreleased.
     /// </summary>
-    System.DateTime? ReleaseDate { get; }
+    DateTime? ReleaseDate { get; }
 }

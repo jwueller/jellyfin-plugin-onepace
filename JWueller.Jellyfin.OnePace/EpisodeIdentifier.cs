@@ -53,7 +53,8 @@ internal static class EpisodeIdentifier
             // match against chapter ranges
             foreach (var episode in episodes.OrderByDescending(episode => episode.MangaChapters?.Length ?? 0))
             {
-                if (!string.IsNullOrEmpty(episode.MangaChapters) && IdentifierUtil.BuildTextRegex(episode.MangaChapters).IsMatch(fileName))
+                if (!string.IsNullOrEmpty(episode.MangaChapters) &&
+                    IdentifierUtil.BuildTextRegex(episode.MangaChapters).IsMatch(fileName))
                 {
                     return episode;
                 }
@@ -62,7 +63,8 @@ internal static class EpisodeIdentifier
             // match against invariant titles
             foreach (var episode in episodes.OrderByDescending(episode => episode.InvariantTitle.Length))
             {
-                if (!string.IsNullOrEmpty(episode.InvariantTitle) && IdentifierUtil.BuildTextRegex(episode.InvariantTitle).IsMatch(fileName))
+                if (!string.IsNullOrEmpty(episode.InvariantTitle) &&
+                    IdentifierUtil.BuildTextRegex(episode.InvariantTitle).IsMatch(fileName))
                 {
                     return episode;
                 }

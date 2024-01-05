@@ -49,7 +49,8 @@ public class EpisodeProvider : IRemoteMetadataProvider<Episode, EpisodeInfo>, IH
     {
         var result = new MetadataResult<Episode>();
 
-        var episodeMatch = await EpisodeIdentifier.IdentifyAsync(_repository, info, cancellationToken).ConfigureAwait(false);
+        var episodeMatch = await EpisodeIdentifier.IdentifyAsync(_repository, info, cancellationToken)
+            .ConfigureAwait(false);
         if (episodeMatch != null)
         {
             var arc = await _repository.FindArcByIdAsync(episodeMatch.ArcId, cancellationToken).ConfigureAwait(false);

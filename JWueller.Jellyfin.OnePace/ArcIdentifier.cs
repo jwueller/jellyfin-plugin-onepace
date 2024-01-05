@@ -1,4 +1,4 @@
-using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -11,7 +11,7 @@ namespace JWueller.Jellyfin.OnePace;
 
 internal static class ArcIdentifier
 {
-    public static async Task<Model.IArc?> IdentifyAsync(
+    public static async Task<IArc?> IdentifyAsync(
         IRepository repository,
         ItemLookupInfo itemLookupInfo,
         CancellationToken cancellationToken)
@@ -40,7 +40,8 @@ internal static class ArcIdentifier
             // match against chapter ranges
             foreach (var arc in arcs.OrderByDescending(arc => arc.MangaChapters?.Length ?? 0))
             {
-                if (!string.IsNullOrEmpty(arc.MangaChapters) && IdentifierUtil.BuildTextRegex(arc.MangaChapters).IsMatch(directoryName))
+                if (!string.IsNullOrEmpty(arc.MangaChapters) &&
+                    IdentifierUtil.BuildTextRegex(arc.MangaChapters).IsMatch(directoryName))
                 {
                     return arc;
                 }
@@ -49,7 +50,8 @@ internal static class ArcIdentifier
             // match against invariant titles
             foreach (var arc in arcs.OrderByDescending(arc => arc.InvariantTitle.Length))
             {
-                if (!string.IsNullOrEmpty(arc.InvariantTitle) && IdentifierUtil.BuildTextRegex(arc.InvariantTitle).IsMatch(directoryName))
+                if (!string.IsNullOrEmpty(arc.InvariantTitle) &&
+                    IdentifierUtil.BuildTextRegex(arc.InvariantTitle).IsMatch(directoryName))
                 {
                     return arc;
                 }
@@ -58,11 +60,7 @@ internal static class ArcIdentifier
             // match against arc ranks
             foreach (var arc in arcs)
             {
-                var pattern =
-                    @"\b0*" +
-                    Regex.Escape(arc.Rank.ToString(System.Globalization.CultureInfo.InvariantCulture)) +
-                    @"\b";
-
+                var pattern = @"\b0*" + Regex.Escape(arc.Rank.ToString(CultureInfo.InvariantCulture)) + @"\b";
                 if (Regex.IsMatch(directoryName, pattern, RegexOptions.IgnoreCase))
                 {
                     return arc;
