@@ -238,7 +238,7 @@ public class WebRepositoryTests
     }
 
     [Fact]
-    public async void ShouldFindSeries()
+    public async Task ShouldFindSeries()
     {
         var result = await _webRepository.FindSeriesAsync(CancellationToken.None);
 
@@ -247,7 +247,7 @@ public class WebRepositoryTests
     }
 
     [Fact]
-    public async void ShouldFindAllArcs()
+    public async Task ShouldFindAllArcs()
     {
         var result = await _webRepository.FindAllArcsAsync(CancellationToken.None);
 
@@ -258,7 +258,7 @@ public class WebRepositoryTests
     }
 
     [Fact]
-    public async void ShouldFindAllEpisodes()
+    public async Task ShouldFindAllEpisodes()
     {
         var result = await _webRepository.FindAllEpisodesAsync(CancellationToken.None);
 
@@ -273,7 +273,7 @@ public class WebRepositoryTests
     [Theory]
     [InlineData("clksypeix000008jw066ye7lo", "Romance Dawn")]
     [InlineData("clksyq4q5000108jwgihd6jud", "Orange Town")]
-    public async void ShouldFindArcById(string arcId, string expectedInvariantTitle)
+    public async Task ShouldFindArcById(string arcId, string expectedInvariantTitle)
     {
         var result = await _webRepository.FindArcByIdAsync(arcId, CancellationToken.None);
 
@@ -286,7 +286,7 @@ public class WebRepositoryTests
     [InlineData("clksys3c2000308jwa08325o7", "Romance Dawn 02")]
     [InlineData("clksysvim000408jw6anzden8", "Romance Dawn 03")]
     [InlineData("clksytlbt000508jw6r9x1jb1", "Orange Town 01")]
-    public async void ShouldFindEpisodeById(string episodeId, string expectedInvariantTitle)
+    public async Task ShouldFindEpisodeById(string episodeId, string expectedInvariantTitle)
     {
         var result = await _webRepository.FindEpisodeByIdAsync(episodeId, CancellationToken.None);
 
@@ -300,7 +300,7 @@ public class WebRepositoryTests
     /// <see href="https://github.com/jwueller/jellyfin-plugin-onepace/issues/12"/>
     /// <see href="https://github.com/jwueller/jellyfin-plugin-onepace/issues/28"/>
     [Fact]
-    public async void ShouldFindEpisodeWithMatchingArcById()
+    public async Task ShouldFindEpisodeWithMatchingArcById()
     {
         var result = await _webRepository.FindEpisodeByIdAsync("clksyqwxl000208jw82wh3y0g", CancellationToken.None);
 
@@ -313,7 +313,7 @@ public class WebRepositoryTests
     [InlineData("en", "One Pace en", "English description")]
     [InlineData("de", "One Pace de", "Deutsche Beschreibung")]
     [InlineData("invalid", "One Pace en", "English description")] // fallback
-    public async void ShouldFindBestSeriesLocalization(string languageCode, string expectedTitle,
+    public async Task ShouldFindBestSeriesLocalization(string languageCode, string expectedTitle,
         string expectedDescription)
     {
         var result = await _webRepository.FindBestLocalizationBySeriesAsync(languageCode, CancellationToken.None);
@@ -328,7 +328,7 @@ public class WebRepositoryTests
     [InlineData("clksyq4q5000108jwgihd6jud", "en", "Orange Town en", "English description for Orange Town")]
     [InlineData("clksyq4q5000108jwgihd6jud", "de", "Orange Town de", "Deutsche Beschreibung für Orange Town")]
     [InlineData("clksyq4q5000108jwgihd6jud", "invalid", "Orange Town en", "English description for Orange Town")] // fallback
-    public async void ShouldFindBestArcLocalization(
+    public async Task ShouldFindBestArcLocalization(
         string arcId,
         string languageCode,
         string expectedTitle,
@@ -345,7 +345,7 @@ public class WebRepositoryTests
     [InlineData("clksyqwxl000208jw82wh3y0g", "de", "Romance Dawn 01 de", "Deutsche Beschreibung für Romance Dawn 01")]
     [InlineData("clksyqwxl000208jw82wh3y0g", "en", "Romance Dawn 01 en", "English description for Romance Dawn 01")]
     [InlineData("clksyqwxl000208jw82wh3y0g", "invalid", "Romance Dawn 01 en", "English description for Romance Dawn 01")] // fallback
-    public async void ShouldFindBestEpisodeLocalization(
+    public async Task ShouldFindBestEpisodeLocalization(
         string episodeId,
         string languageCode,
         string expectedTitle,
@@ -360,7 +360,7 @@ public class WebRepositoryTests
     }
 
     [Fact]
-    public async void ShouldFindSeriesLogoArt()
+    public async Task ShouldFindSeriesLogoArt()
     {
         var result = await _webRepository.FindAllLogoArtBySeriesAsync(CancellationToken.None);
 
@@ -369,7 +369,7 @@ public class WebRepositoryTests
     }
 
     [Fact]
-    public async void ShouldFindSeriesCoverArt()
+    public async Task ShouldFindSeriesCoverArt()
     {
         var result = await _webRepository.FindAllCoverArtBySeriesAsync(CancellationToken.None);
 
@@ -379,7 +379,7 @@ public class WebRepositoryTests
     [Theory]
     [InlineData("clksypeix000008jw066ye7lo", 4)]
     [InlineData("clksyq4q5000108jwgihd6jud", 1)]
-    public async void ShouldFindAllArcCoverArt(string arcId, int expectedCoverArtCount)
+    public async Task ShouldFindAllArcCoverArt(string arcId, int expectedCoverArtCount)
     {
         var result = await _webRepository.FindAllCoverArtByArcIdAsync(arcId, CancellationToken.None);
 
@@ -391,7 +391,7 @@ public class WebRepositoryTests
     [InlineData("clksyqwxl000208jw82wh3y0g", 3)]
     [InlineData("clksys3c2000308jwa08325o7", 1)]
     [InlineData("clksytlbt000508jw6r9x1jb1", 2)]
-    public async void ShouldFindAllEpisodeCoverArt(string episodeId, int expectedCoverArtCount)
+    public async Task ShouldFindAllEpisodeCoverArt(string episodeId, int expectedCoverArtCount)
     {
         var result = await _webRepository.FindAllCoverArtByEpisodeIdAsync(episodeId, CancellationToken.None);
 

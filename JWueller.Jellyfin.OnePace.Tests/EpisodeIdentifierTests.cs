@@ -128,7 +128,7 @@ public class EpisodeIdentifierTests
     [InlineData("clkso9t8u000108jk5lbu2409", "Romance Dawn 02")]
     [InlineData("clkso9z6n000208jk069u63ih", "Orange Town 01")]
     [InlineData("clksoa57k000308jkb3cu73n8", "Orange Town 02")]
-    public async void ShouldIdentifyEpisodeByProviderId(string episodeId, string expectedInvariantTitle)
+    public async Task ShouldIdentifyEpisodeByProviderId(string episodeId, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo();
         itemLookupInfo.SetOnePaceId(episodeId);
@@ -152,7 +152,7 @@ public class EpisodeIdentifierTests
     [InlineData("/path/to/One Pace/Orange Town 01.mkv", "Orange Town 01")] // invariant title only
     [InlineData("/path/to/One Pace/D767799C.mkv", "Romance Dawn 01")] // uppercase CRC-32 only
     [InlineData("/path/to/One Pace/c7ca5080.mkv", "Orange Town 01")] // lowercase CRC-32 only
-    public async void ShouldIdentifyEpisodeByPath(string path, string expectedInvariantTitle)
+    public async Task ShouldIdentifyEpisodeByPath(string path, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo
         {
@@ -172,7 +172,7 @@ public class EpisodeIdentifierTests
     [Theory]
     [InlineData("/path/to/One Pace/Enies Lobby 01.mkv", "Enies Lobby 01")]
     [InlineData("/path/to/One Pace/Post-Enies Lobby 01.mkv", "Post-Enies Lobby 01")]
-    public async void ShouldPreferLongerTitles(string path, string expectedInvariantTitle)
+    public async Task ShouldPreferLongerTitles(string path, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo
         {
@@ -189,7 +189,7 @@ public class EpisodeIdentifierTests
     /// It's 'Whisky Peak', not 'Whiskey Peak', but its such a common typo that we need to handle it.
     /// </summary>
     [Fact]
-    public async void ShouldIdentifyWhiskyPeakDespiteTypo()
+    public async Task ShouldIdentifyWhiskyPeakDespiteTypo()
     {
         var itemLookupInfo = new ItemLookupInfo
         {
@@ -200,5 +200,21 @@ public class EpisodeIdentifierTests
 
         Assert.NotNull(episode);
         Assert.Equal("Whisky Peak 01", episode.InvariantTitle);
+    }
+
+    /// <summary>
+    /// Jellyfin 10.9.x apparently decided to not have paths for all media anymore.
+    /// </summary>
+    [Fact]
+    public async Task ShouldNotCrashWithMissingPath()
+    {
+        var itemLookupInfo = new ItemLookupInfo
+        {
+            Path = null
+        };
+
+        var episode = await EpisodeIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
+
+        Assert.Null(episode);
     }
 }

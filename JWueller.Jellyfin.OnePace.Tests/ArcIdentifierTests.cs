@@ -100,7 +100,7 @@ public class ArcIdentifierTests
     [InlineData("clkso3n3l000008l751pk86u4", "Romance Dawn")]
     [InlineData("clkso3uwi000108l724rj9vc0", "Orange Town")]
     [InlineData("clkso3zi6000208l7bhq7dtn6", "Syrup Village")]
-    public async void ShouldIdentifyArcByProviderId(string id, string expectedInvariantTitle)
+    public async Task ShouldIdentifyArcByProviderId(string id, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo();
         itemLookupInfo.SetOnePaceId(id);
@@ -119,7 +119,7 @@ public class ArcIdentifierTests
     [InlineData("/path/to/One Pace/001", "Romance Dawn")] // rank (padded)
     [InlineData("/path/to/One Pace/[One Pace][8-21] Orange Town [1080p]", "Orange Town")] // release name
     [InlineData("/path/to/One Pace/[One Pace][23-41] Syrup Village [480p]", "Syrup Village")] // release name
-    public async void ShouldIdentifyArcByPath(string path, string expectedInvariantTitle)
+    public async Task ShouldIdentifyArcByPath(string path, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo
         {
@@ -139,7 +139,7 @@ public class ArcIdentifierTests
     [Theory]
     [InlineData("/path/to/One Pace/Enies Lobby", "Enies Lobby")]
     [InlineData("/path/to/One Pace/Post-Enies Lobby", "Post-Enies Lobby")]
-    public async void ShouldPreferLongerTitles(string path, string expectedInvariantTitle)
+    public async Task ShouldPreferLongerTitles(string path, string expectedInvariantTitle)
     {
         var itemLookupInfo = new ItemLookupInfo
         {
@@ -156,7 +156,7 @@ public class ArcIdentifierTests
     /// It's 'Whisky Peak', not 'Whiskey Peak', but its such a common typo that we need to handle it.
     /// </summary>
     [Fact]
-    public async void ShouldIdentifyWhiskyPeakDespiteTypo()
+    public async Task ShouldIdentifyWhiskyPeakDespiteTypo()
     {
         var itemLookupInfo = new ItemLookupInfo
         {
@@ -167,5 +167,21 @@ public class ArcIdentifierTests
 
         Assert.NotNull(arc);
         Assert.Equal("Whisky Peak", arc.InvariantTitle);
+    }
+
+    /// <summary>
+    /// Jellyfin 10.9.x apparently decided to not have paths for all media anymore.
+    /// </summary>
+    [Fact]
+    public async Task ShouldNotCrashWithMissingPath()
+    {
+        var itemLookupInfo = new ItemLookupInfo
+        {
+            Path = null
+        };
+
+        var arc = await ArcIdentifier.IdentifyAsync(_repository, itemLookupInfo, CancellationToken.None);
+
+        Assert.Null(arc);
     }
 }

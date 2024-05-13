@@ -27,7 +27,7 @@ internal static class EpisodeIdentifier
             }
         }
 
-        if (IdentifierUtil.OnePaceInvariantTitleRegex.IsMatch(itemLookupInfo.Path))
+        if (itemLookupInfo.Path != null && IdentifierUtil.OnePaceInvariantTitleRegex.IsMatch(itemLookupInfo.Path))
         {
             var episodes = await repository.FindAllEpisodesAsync(cancellationToken).ConfigureAwait(false);
 

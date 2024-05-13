@@ -26,7 +26,7 @@ internal static class ArcIdentifier
             }
         }
 
-        if (IdentifierUtil.OnePaceInvariantTitleRegex.IsMatch(itemLookupInfo.Path))
+        if (itemLookupInfo.Path != null && IdentifierUtil.OnePaceInvariantTitleRegex.IsMatch(itemLookupInfo.Path))
         {
             var arcs = await repository.FindAllArcsAsync(cancellationToken).ConfigureAwait(false);
 

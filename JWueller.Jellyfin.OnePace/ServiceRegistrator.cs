@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Plugins;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JWueller.Jellyfin.OnePace;
@@ -9,7 +10,7 @@ namespace JWueller.Jellyfin.OnePace;
 public class ServiceRegistrator : IPluginServiceRegistrator
 {
     /// <inheritdoc/>
-    public void RegisterServices(IServiceCollection serviceCollection)
+    public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost)
     {
         serviceCollection.AddSingleton<IRepository, WebRepository>();
     }

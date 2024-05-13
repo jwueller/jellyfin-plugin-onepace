@@ -33,7 +33,7 @@ public class SeriesIdentifierTests
     }
 
     [Fact]
-    public async void ShouldIdentifySeriesByProviderId()
+    public async Task ShouldIdentifySeriesByProviderId()
     {
         var itemLookupInfo = new ItemLookupInfo();
         itemLookupInfo.SetOnePaceId(Plugin.DummySeriesId);
@@ -47,7 +47,7 @@ public class SeriesIdentifierTests
     [Theory]
     [InlineData("/path/to/One Pace")]
     [InlineData("/path/to/One Piece [One Pace]")]
-    public async void ShouldIdentifySeriesByPath(string path)
+    public async Task ShouldIdentifySeriesByPath(string path)
     {
         var itemLookupInfo = new ItemLookupInfo
         {
@@ -63,7 +63,7 @@ public class SeriesIdentifierTests
     [Theory]
     [InlineData("One Pace")]
     [InlineData("One Piece [One Pace]")]
-    public async void ShouldIdentifySeriesByName(string name)
+    public async Task ShouldIdentifySeriesByName(string name)
     {
         var itemLookupInfo = new ItemLookupInfo
         {
