@@ -2,30 +2,7 @@
 
 This [Jellyfin](https://jellyfin.org/) plugin provides metadata and cover art integration for the [One Pace](https://onepace.net/) project.
 
-
-## Troubleshooting
-
-### Arcs/seasons are not detected correctly
-
-You might be missing a series-folder. Please see the [Pitfalls](#Pitfalls) section for more details. To ensure that your folder structure is correct, please follow these steps:
-
-1. Note down the folder path for the library you configured this plugin for.
-2. Ensure that the library folder contains _one folder per series_ (e.g. `One Pace`).
-3. Ensure that the `One Pace` series folder contains _one folder per arc/season_, (e.g. `[One Pace][1-7] Romance Dawn [1080p]`).
-4. Ensure that the video files are placed _within the respective arc/season folder_.
-5. Replace all metadata for the library (see the [Outdated metadata](#Outdated-metadata) section).
-
-
-### Outdated metadata
-
-If you are experiencing issues with outdated/partial data, please try explicitly replacing all metadata. This applies to Jellyfin in general and isn't specific to this plugin.
-
-1. Press the three dots on the library.
-2. Select "Refresh metadata".
-3. Select "Replace all metadata" from the dropdown.
-4. Check "Replace existing images", if desired.
-5. Click the "Refresh" button.
-6. Wait for the scan to finish.
+> **If you encounter any issues, please try the [troubleshooting steps](#Troubleshooting) first.**
 
 
 ## What does it look like?
@@ -102,7 +79,17 @@ This integration is designed to work directly with the released files from the O
 ```
 
 
-### Pitfalls
+## Troubleshooting
+
+### Arcs/seasons are not detected correctly
+
+You might be missing a series-folder. To ensure that your folder structure is correct, please follow these steps:
+
+1. Note down the folder path for the library you configured this plugin for.
+2. Ensure that the library folder contains _one folder per series_ (e.g. `One Pace`).
+3. Ensure that the `One Pace` series folder contains _one folder per arc/season_, (e.g. `[One Pace][1-7] Romance Dawn [1080p]`).
+4. Ensure that the video files are placed _within the respective arc/season folder_.
+5. Replace all metadata for the library (see the [Outdated metadata](#Outdated-metadata) section).
 
 Jellyfin expects a folder for both the series and each of the seasons/arcs. That means that you can't put your arcs directly into the library if you made one specifically for One Pace.
 
@@ -121,3 +108,15 @@ In this case, you would need an additional season folder at the root of the libr
 ^^^^^^^^^^^^^^^ ^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 library         series   season/arc                           episode
 ```
+
+
+### Outdated metadata
+
+If you are experiencing issues with outdated/partial data, please try explicitly replacing all metadata. This applies to Jellyfin in general and isn't specific to this plugin.
+
+1. Press the three dots on the library.
+2. Select "Refresh metadata".
+3. Select "Replace all metadata" from the dropdown.
+4. Check "Replace existing images", if desired.
+5. Click the "Refresh" button.
+6. Wait for the scan to finish.
