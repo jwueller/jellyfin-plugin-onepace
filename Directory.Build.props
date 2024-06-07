@@ -1,8 +1,18 @@
 <Project>
   <PropertyGroup>
-    <ProjectVersion>1.5.1.0</ProjectVersion>
-    <Version>$(ProjectVersion)</Version>
-    <AssemblyVersion>$(ProjectVersion)</AssemblyVersion>
-    <FileVersion>$(ProjectVersion)</FileVersion>
+    <PluginBuildVersion>13</PluginBuildVersion>
+  </PropertyGroup>
+  <Target Name="BuildPluginVersion" BeforeTargets="BeforeBuild">
+    <ItemGroup>
+      <JellyfinVersion Include="%(PackageVersion.Version)" Condition="%(PackageVersion.Identity) == 'Jellyfin.Controller'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <PluginVersion>@(JellyfinVersion).$(PluginBuildVersion)</PluginVersion>
+    </PropertyGroup>
+  </Target>
+  <PropertyGroup>
+    <Version>$(PluginVersion)</Version>
+    <AssemblyVersion>$(PluginVersion)</AssemblyVersion>
+    <FileVersion>$(PluginVersion)</FileVersion>
   </PropertyGroup>
 </Project>

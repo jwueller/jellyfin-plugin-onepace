@@ -3,12 +3,39 @@
 This [Jellyfin](https://jellyfin.org/) plugin provides metadata and cover art integration for the [One Pace](https://onepace.net/) project.
 
 
-### Series Overview
+## Troubleshooting
+
+### Arcs/seasons are not detected correctly
+
+You might be missing a series-folder. Please see the [Pitfalls](#Pitfalls) section for more details. To ensure that your folder structure is correct, please follow these steps:
+
+1. Note down the folder path for the library you configured this plugin for.
+2. Ensure that the library folder contains _one folder per series_ (e.g. `One Pace`).
+3. Ensure that the `One Pace` series folder contains _one folder per arc/season_, (e.g. `[One Pace][1-7] Romance Dawn [1080p]`).
+4. Ensure that the video files are placed _within the respective arc/season folder_.
+5. Replace all metadata for the library (see the [Outdated metadata](#Outdated-metadata) section).
+
+
+### Outdated metadata
+
+If you are experiencing issues with outdated/partial data, please try explicitly replacing all metadata. This applies to Jellyfin in general and isn't specific to this plugin.
+
+1. Press the three dots on the library.
+2. Select "Refresh metadata".
+3. Select "Replace all metadata" from the dropdown.
+4. Check "Replace existing images", if desired.
+5. Click the "Refresh" button.
+6. Wait for the scan to finish.
+
+
+## What does it look like?
+
+### Series overview
 
 ![Series Overview](docs/series.png)
 
 
-### Arc Overview
+### Arc/season overview
 
 ![Arc Overview](docs/arc.png)
 
@@ -19,7 +46,7 @@ This [Jellyfin](https://jellyfin.org/) plugin provides metadata and cover art in
 2. Install the "One Pace" plugin from the catalog
 
 
-### Configure the Library
+### Configure the library
 
 Make sure you have a library of content type "Shows". You can use an existing one or create a new one like this:
 
@@ -41,7 +68,7 @@ If the library was previously scanned, you might have to manually identify or re
 Note that the One Pace project currently doesn't have any series cover art, so you might have to either manually upload some, or enable a different provider like AniList or AniDB to fetch some for the regular One Piece series.
 
 
-## Recommended File Structure
+## Library folder structure
 
 This integration is designed to work directly with the released files from the One Pace project.
 
@@ -52,19 +79,19 @@ This integration is designed to work directly with the released files from the O
 
 ### Example
 
-```
-/media/anime/
-├── One Pace
-│   ├── [One Pace][1-7] Romance Dawn [1080p]
+```plain
+/media/anime/                                    <- library
+├── One Pace                                     <- series
+│   ├── [One Pace][1-7] Romance Dawn [1080p]     <- arc/season
 │   │   ├── [One Pace][1] Romance Dawn 01 [1080p][D767799C].mkv
 │   │   ├── [One Pace][2] Romance Dawn 02 [1080p][04A43CEF].mkv
 │   │   ├── [One Pace][3-5] Romance Dawn 03 [1080p][C7CA5080].mkv
 │   │   └── [One Pace][5-7] Romance Dawn 04 [1080p][09DD81D3].mkv
-│   ├── [One Pace][8-21] Orange Town [1080p]
+│   ├── [One Pace][8-21] Orange Town [1080p]     <- arc/season
 │   │   ├── [One Pace][11-16] Orange Town 02 [480p][3D7957D8].mkv
 │   │   ├── [One Pace][17-21] Orange Town 03 [480p][800263CF].mkv
 │   │   └── [One Pace][8-11] Orange Town 01 [480p][A2F5F372].mkv
-│   ├── [One Pace][23-41] Syrup Village [480p]
+│   ├── [One Pace][23-41] Syrup Village [480p]   <- arc/season
 │   │   ├── [One Pace][23-25] Syrup Village 01 [480p][B19F374A].mkv
 │   │   ├── [One Pace][26-27] Syrup Village 02 [480p][7EE6C65F].mkv
 │   │   ├── [One Pace][28-30] Syrup Village 03 [480p][C2C0A86A].mkv

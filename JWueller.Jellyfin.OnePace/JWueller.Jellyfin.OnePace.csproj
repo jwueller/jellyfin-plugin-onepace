@@ -9,20 +9,20 @@
     <CodeAnalysisRuleSet>../jellyfin.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Jellyfin.Controller" Version="10.9.6"/>
-    <PackageReference Include="Jellyfin.Model" Version="10.9.6"/>
+    <PackageReference Include="Jellyfin.Controller"/>
+    <PackageReference Include="Jellyfin.Model"/>
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="$(AssemblyName).Tests"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="All"/>
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="All"/>
-    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31" PrivateAssets="All"/>
+    <PackageReference Include="SerilogAnalyzer" PrivateAssets="All"/>
+    <PackageReference Include="StyleCop.Analyzers" PrivateAssets="All"/>
+    <PackageReference Include="SmartAnalyzers.MultithreadingAnalyzer" PrivateAssets="All"/>
   </ItemGroup>
   <Target Name="GenerateManifest" AfterTargets="Build">
     <Exec
-      EnvironmentVariables="PROJECT_VERSION=$(ProjectVersion);CHANGELOG_PATH=$(SolutionDir)changelogs/$(ProjectVersion).md"
-      Command="yq '.version = strenv(PROJECT_VERSION) | .changelog = (load_str(strenv(CHANGELOG_PATH)) | trim)' &lt; $(SolutionDir)/meta.template.yaml &gt; $(SolutionDir)/jprm.yaml" />
+      EnvironmentVariables="PLUGIN_VERSION=$(PluginVersion);CHANGELOG_PATH=$(SolutionDir)/changelogs/$(PluginVersion).md"
+      Command="yq '.version = strenv(PLUGIN_VERSION) | .changelog = (load_str(strenv(CHANGELOG_PATH)) | trim)' &lt; $(SolutionDir)/meta.template.yaml &gt; $(SolutionDir)/jprm.yaml"/>
   </Target>
 </Project>

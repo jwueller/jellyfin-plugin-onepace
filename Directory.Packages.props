@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Jellyfin.Controller" Version="10.9.6"/>
+    <PackageVersion Include="Jellyfin.Model" Version="10.9.6"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageVersion Include="SerilogAnalyzer" Version="0.15.0"/>
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556"/>
+    <PackageVersion Include="SmartAnalyzers.MultithreadingAnalyzer" Version="1.1.31"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+    <PackageVersion Include="Moq" Version="4.20.70" />
+    <PackageVersion Include="xunit" Version="2.8.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.1"/>
+    <PackageVersion Include="coverlet.collector" Version="6.0.2"/>
+  </ItemGroup>
+</Project>
