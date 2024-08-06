@@ -7,7 +7,9 @@
   "packageRules": [
     {
       "groupName": "Jellyfin packages",
-      "matchPackagePrefixes": ["Jellyfin."]
+      "matchPackageNames": [
+        "Jellyfin.{/,}**"
+      ]
     }
   ]
 }
