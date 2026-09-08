@@ -16,6 +16,6 @@
     <PackageVersion Include="Moq" Version="4.20.70" />
     <PackageVersion Include="xunit" Version="2.8.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.1"/>
-    <PackageVersion Include="coverlet.collector" Version="6.0.2"/>
+    <PackageVersion Include="coverlet.collector" Version="6.0.4"/>
   </ItemGroup>
 </Project>
